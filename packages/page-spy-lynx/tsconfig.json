@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "dist",
+    "declarationDir": "dist/types",
+    "noEmit": true,
+    "declaration": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "Bundler",
+    "importHelpers": true,
+    "target": "ESNext",
+    "module": "esnext",
+    "lib": ["DOM", "DOM.Iterable", "esnext"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "allowJs": true
+  },
+  "include": ["./src"],
+  "exclude": ["node_modules", "dist"]
+}

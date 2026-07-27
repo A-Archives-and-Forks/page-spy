@@ -1,0 +1,71 @@
+{
+  "name": "@huolala-tech/page-spy-lynx",
+  "version": "2.2.6",
+  "description": "An SDK of PageSpy for debugging ReactLynx app",
+  "license": "MIT",
+  "main": "dist/esm/index.min.js",
+  "types": "dist/types/index.d.ts",
+  "files": [
+    "dist",
+    "native-examples"
+  ],
+  "homepage": "https://www.pagespy.org/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HuolalaTech/page-spy.git",
+    "directory": "packages/page-spy-lynx"
+  },
+  "keywords": [
+    "pagespy",
+    "debug",
+    "remote",
+    "inspect",
+    "devtools"
+  ],
+  "engines": {
+    "node": ">=12"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
+    "clean": "rimraf node_modules .turbo dist"
+  },
+  "dependencies": {
+    "@huolala-tech/page-spy-base": "^2.2.5",
+    "@huolala-tech/page-spy-types": "^2.2.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.14.0",
+    "@babel/plugin-transform-runtime": "^7.23.6",
+    "@babel/preset-env": "^7.14.1",
+    "@babel/preset-typescript": "^7.13.0",
+    "@babel/runtime": "^7.13.0",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-commonjs": "^24.0.1",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-terser": "^0.4.4",
+    "core-js": "3",
+    "rollup": "^3.10.0",
+    "rollup-plugin-delete": "^2.0.0",
+    "rollup-plugin-typescript2": "^0.34.1"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all",
+    "printWidth": 80
+  },
+  "browserslist": [
+    "chrome > 75",
+    "safari > 12",
+    "> 0.1%",
+    "not dead",
+    "not op_mini all"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@lynx-js/react": ">=0.105.0"
+  }
+}
