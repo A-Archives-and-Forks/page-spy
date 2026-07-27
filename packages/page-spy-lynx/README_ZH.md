@@ -10,13 +10,13 @@
 [![SDK version][npm-image]][npm-url]
 [![SDK size][minified-image]][minified-url]
 
-> 这个 SDK 用于调试 ReactLynx APP。
+> 这个 SDK 用于调试 Lynx APP。
 
-ReactLynx 不提供浏览器里的 `window` 和 `document` 对象。本 SDK 不依赖 DOM API，内置插件会先检查 Lynx 运行时是否提供对应全局能力，可用才启用。
+Lynx 不提供浏览器里的 `window` 和 `document` 对象。本 SDK 不依赖 DOM API，内置插件会先检查 Lynx 运行时是否提供对应全局能力，可用才启用。
 
 ## 使用
 
-建议在后台专属代码里初始化 PageSpy，例如只被后台逻辑引入的入口模块，或 ReactLynx 的 `useEffect` 中。
+建议在后台专属代码里初始化 PageSpy，例如只被后台逻辑引入的入口模块，或 Lynx 的 `useEffect` 中。
 
 ```ts
 import PageSpy from '@huolala-tech/page-spy-react-lynx';

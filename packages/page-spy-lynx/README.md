@@ -10,13 +10,13 @@
 [![SDK version][npm-image]][npm-url]
 [![SDK size][minified-image]][minified-url]
 
-> PageSpy SDK for ReactLynx apps.
+> PageSpy SDK for Lynx apps.
 
-ReactLynx does not provide browser `window` or `document` objects. This SDK does not depend on DOM APIs, and its built-in plugins enable themselves only when the Lynx runtime exposes the corresponding global capability.
+Lynx does not provide browser `window` or `document` objects. This SDK does not depend on DOM APIs, and its built-in plugins enable themselves only when the Lynx runtime exposes the corresponding global capability.
 
 ## Usage
 
-Initialize PageSpy from background-only code, such as an entry module imported only by background logic or inside a ReactLynx `useEffect`.
+Initialize PageSpy from background-only code, such as an entry module imported only by background logic or inside a Lynx `useEffect`.
 
 ```ts
 import PageSpy from '@huolala-tech/page-spy-react-lynx';
