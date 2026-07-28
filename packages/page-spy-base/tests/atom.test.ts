@@ -134,3 +134,45 @@ describe('transformToAtom: convert data to be descriptive atom object', () => {
     expect(atom.transformToAtom(Object.prototype).type).toBe('atom');
   });
 });
+
+describe('Atom store eviction', () => {
+  it('Store evicts oldest entries when exceeding maxStoreSize', () => {
+    const originalMax = atom.maxStoreSize;
+    atom.maxStoreSize = 5;
+
+    const ids: string[] = [];
+    for (let i = 0; i < 8; i++) {
+      const overview = atom.add({ index: i });
+      ids.push(overview.__atomId!);
+    }
+
+    // Only the latest 5 entries should remain
+    expect(Object.keys(atom.getStore()).length).toBe(5);
+    expect(Object.keys(atom.getInstanceStore()).length).toBe(5);
+
+    // The first 3 (oldest) should be evicted
+    expect(atom.getStore()[ids[0]]).toBeUndefined();
+    expect(atom.getStore()[ids[1]]).toBeUndefined();
+    expect(atom.getStore()[ids[2]]).toBeUndefined();
+
+    // The last 5 should still exist
+    for (let i = 3; i < 8; i++) {
+      expect(atom.getStore()[ids[i]]).toBeDefined();
+    }
+
+    atom.maxStoreSize = originalMax;
+  });
+
+  it('resetStore clears both store and internal key list', () => {
+    atom.add({ a: 1 });
+    atom.add({ b: 2 });
+    expect(Object.keys(atom.getStore()).length).toBe(2);
+
+    atom.resetStore();
+    expect(Object.keys(atom.getStore()).length).toBe(0);
+
+    // After reset, adding new items should work correctly
+    atom.add({ c: 3 });
+    expect(Object.keys(atom.getStore()).length).toBe(1);
+  });
+});

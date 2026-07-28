@@ -128,4 +128,39 @@ describe('Socket store', () => {
     await sleep(2000);
     expect(client.getSocket().getState()).not.toBe(SocketState.OPEN);
   });
+
+  it('Malformed JSON message should not crash the SDK', async () => {
+    const sdkConnection = {
+      name: 'SDK',
+      userId: 'SDK',
+      address: '<hash>',
+    };
+    const debugConnection = {
+      name: 'Debugger',
+      userId: 'Debugger',
+      address: '<hash>',
+    };
+    const { CONNECT } = SERVER_MESSAGE_TYPE;
+
+    // Establish connection first
+    const connectMsg: ConnectEvent = {
+      type: CONNECT,
+      content: {
+        roomConnections: [sdkConnection, debugConnection],
+        selfConnection: sdkConnection,
+      },
+    };
+    server.send(connectMsg);
+    await sleep();
+
+    // Directly invoke handleMessage with malformed JSON - should not throw
+    // @ts-ignore - accessing protected method for testing
+    expect(() => {
+      // @ts-ignore
+      client.handleMessage({ data: '{invalid json!!!' });
+    }).not.toThrow();
+
+    // SDK should still be functional after malformed message
+    expect(client.getSocket().getState()).toBe(SocketState.OPEN);
+  });
 });
