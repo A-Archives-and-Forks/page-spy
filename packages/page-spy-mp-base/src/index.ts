@@ -226,7 +226,13 @@ class PageSpy {
       ) {
         return;
       }
-      (plugin[lifecycle] as any)?.apply(plugin, args);
+      try {
+        (plugin[lifecycle] as any)?.apply(plugin, args);
+      } catch (e) {
+        // Isolate plugin errors so that one faulty plugin
+        // does not break the lifecycle of the remaining plugins.
+        psLog.error(`Plugin [${plugin.name}] threw in "${lifecycle}":`, e);
+      }
     });
   }
 

@@ -277,10 +277,16 @@ class PageSpy {
         return;
       }
       // eslint-disable-next-line prefer-spread
-      (plugin[lifecycle] as any)?.apply(plugin, [
-        { ...args[0], modal, toast: Toast },
-        args.slice(1),
-      ]);
+      try {
+        (plugin[lifecycle] as any)?.apply(plugin, [
+          { ...args[0], modal, toast: Toast },
+          args.slice(1),
+        ]);
+      } catch (e) {
+        // Isolate plugin errors so that one faulty plugin
+        // does not break the lifecycle of the remaining plugins.
+        psLog.error(`Plugin [${plugin.name}] threw in "${lifecycle}":`, e);
+      }
     });
   }
 
