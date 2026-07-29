@@ -121,6 +121,9 @@ export abstract class SocketStoreBase {
   // messages store
   public messages: SpySocket.BroadcastEvent[] = [];
 
+  // pointer to the first valid message in the buffer (avoids O(n) shift)
+  protected messageHead: number = 0;
+
   // events center
   public events: Record<
     InteractiveType | InternalMsgType,
@@ -273,6 +276,7 @@ export abstract class SocketStoreBase {
     this.clearPing();
     this.socketWrapper?.close();
     this.messages = [];
+    this.messageHead = 0;
     Object.entries(this.events).forEach(([evt, fns]) => {
       // 这三个事件的生命周期跟随 socketStore
       if (['atom-detail', 'atom-getter', 'debugger-online'].includes(evt)) {
@@ -345,8 +349,10 @@ export abstract class SocketStoreBase {
   }
 
   public handlePong() {
-    clearTimeout(this.pongTimer!);
-    this.pongTimer = null;
+    if (this.pongTimer) {
+      clearTimeout(this.pongTimer);
+      this.pongTimer = null;
+    }
     this.ping();
   }
 
@@ -368,7 +374,13 @@ export abstract class SocketStoreBase {
       CLOSE,
       BROADCAST,
     } = SERVER_MESSAGE_TYPE;
-    const result = JSON.parse(evt.data) as SpySocket.Event;
+    let result: SpySocket.Event;
+    try {
+      result = JSON.parse(evt.data) as SpySocket.Event;
+    } catch (e) {
+      psLog.warn('Failed to parse message, malformed data received.');
+      return;
+    }
     const { type } = result;
     switch (type) {
       case CONNECT:
@@ -454,7 +466,7 @@ export abstract class SocketStoreBase {
     const { latestId } = message.source.data;
 
     const msgIndex = this.messages.findIndex(
-      (i) => i.content.data.data.id === latestId,
+      (i, idx) => idx >= this.messageHead && i.content.data.data.id === latestId,
     );
 
     /* c8 ignore start */
@@ -528,9 +540,14 @@ export abstract class SocketStoreBase {
     if (cacheable) {
       if (
         this.messageCapacity !== 0 &&
-        this.messages.length >= this.messageCapacity
+        this.messages.length - this.messageHead >= this.messageCapacity
       ) {
-        this.messages.shift();
+        this.messageHead += 1;
+        // Periodically compact the array to prevent unbounded growth
+        if (this.messageHead > this.messageCapacity) {
+          this.messages = this.messages.slice(this.messageHead);
+          this.messageHead = 0;
+        }
       }
       this.messages.push(msg as SpySocket.BroadcastEvent);
     }

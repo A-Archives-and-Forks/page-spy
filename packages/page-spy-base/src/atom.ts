@@ -22,6 +22,7 @@ export class Atom {
 
   public resetStore() {
     this.store = {};
+    this.storeKeys = [];
   }
 
   // { __atomId: instanceId }
@@ -34,6 +35,13 @@ export class Atom {
   public resetInstanceStore() {
     this.instanceStore = {};
   }
+
+  // Maximum number of entries to retain in the store.
+  // Once exceeded, the oldest entries are evicted (FIFO).
+  public maxStoreSize: number = 5000;
+
+  // Insertion-ordered key list for efficient eviction
+  private storeKeys: string[] = [];
 
   public transformToAtom(data: any, serializeData = false): any {
     const { value, ok } = makePrimitiveValue(data);
@@ -107,8 +115,18 @@ export class Atom {
     }
     this.store[id] = data;
     this.instanceStore[id] = instanceId;
+    this.storeKeys.push(id);
+    this.evictIfNeeded();
     const name = Atom.getSemanticValue(data);
     return Atom.getAtomOverview({ atomId: id, value: name, instanceId });
+  }
+
+  private evictIfNeeded() {
+    while (this.storeKeys.length > this.maxStoreSize) {
+      const oldestKey = this.storeKeys.shift()!;
+      delete this.store[oldestKey];
+      delete this.instanceStore[oldestKey];
+    }
   }
 
   public static getAtomOverview({

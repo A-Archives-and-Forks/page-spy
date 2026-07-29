@@ -88,6 +88,46 @@ describe('new PageSpy([config])', () => {
     expect(onInitFn).toHaveBeenCalledTimes(INTERNAL_PLUGINS.length);
   });
 
+  it('A faulty plugin throwing in onInit should not break other plugins', () => {
+    const faultyOnInit = jest.fn(() => {
+      throw new Error('faulty plugin boom');
+    });
+    const normalOnInit = jest.fn();
+
+    class FaultyPlugin {
+      name = 'FaultyPlugin';
+
+      onInit = faultyOnInit;
+    }
+    class NormalPlugin {
+      name = 'NormalPlugin';
+
+      onInit = normalOnInit;
+    }
+
+    const faulty = new FaultyPlugin();
+    const normal = new NormalPlugin();
+    // @ts-ignore - minimal plugin shape for testing
+    SDK.registerPlugin(faulty);
+    // @ts-ignore
+    SDK.registerPlugin(normal);
+
+    // Should not throw even though FaultyPlugin.onInit throws
+    expect(() => {
+      sdk = new SDK();
+    }).not.toThrow();
+
+    // Both plugins' onInit were attempted
+    expect(faultyOnInit).toHaveBeenCalledTimes(1);
+    // The normal plugin after the faulty one still got initialized
+    expect(normalOnInit).toHaveBeenCalledTimes(1);
+
+    // cleanup registered test plugins
+    SDK.plugins.normal = SDK.plugins.normal.filter(
+      (p) => p.name !== 'FaultyPlugin' && p.name !== 'NormalPlugin',
+    );
+  });
+
   it('With ConsolePlugin loaded, ths console.<type> menthods be wrapped', () => {
     const consoleKey: SpyConsole.ProxyType[] = [
       'log',
