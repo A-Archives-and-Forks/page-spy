@@ -1,11 +1,11 @@
-[npm-image]: https://img.shields.io/npm/v/@huolala-tech/page-spy-react-lynx?logo=npm&label=version
-[npm-url]: https://www.npmjs.com/package/@huolala-tech/page-spy-react-lynx
-[minified-image]: https://img.shields.io/bundlephobia/min/@huolala-tech/page-spy-react-lynx
-[minified-url]: https://unpkg.com/browse/@huolala-tech/page-spy-react-lynx/dist/esm/index.min.js
+[npm-image]: https://img.shields.io/npm/v/@huolala-tech/page-spy-lynx?logo=npm&label=version
+[npm-url]: https://www.npmjs.com/package/@huolala-tech/page-spy-lynx
+[minified-image]: https://img.shields.io/bundlephobia/min/@huolala-tech/page-spy-lynx
+[minified-url]: https://unpkg.com/browse/@huolala-tech/page-spy-lynx/dist/esm/index.min.js
 
 [English](./README.md) | [Chinese](./README_ZH.md)
 
-# `@huolala-tech/page-spy-react-lynx`
+# `@huolala-tech/page-spy-lynx`
 
 [![SDK version][npm-image]][npm-url]
 [![SDK size][minified-image]][minified-url]
@@ -19,7 +19,7 @@ Lynx does not provide browser `window` or `document` objects. This SDK does not 
 Initialize PageSpy from background-only code, such as an entry module imported only by background logic or inside a Lynx `useEffect`.
 
 ```ts
-import PageSpy from '@huolala-tech/page-spy-react-lynx';
+import PageSpy from '@huolala-tech/page-spy-lynx';
 
 const pageSpy = new PageSpy({
   api: 'example.com',

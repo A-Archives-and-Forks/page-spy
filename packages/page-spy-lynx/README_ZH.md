@@ -1,11 +1,11 @@
-[npm-image]: https://img.shields.io/npm/v/@huolala-tech/page-spy-react-lynx?logo=npm&label=version
-[npm-url]: https://www.npmjs.com/package/@huolala-tech/page-spy-react-lynx
-[minified-image]: https://img.shields.io/bundlephobia/min/@huolala-tech/page-spy-react-lynx
-[minified-url]: https://unpkg.com/browse/@huolala-tech/page-spy-react-lynx/dist/esm/index.min.js
+[npm-image]: https://img.shields.io/npm/v/@huolala-tech/page-spy-lynx?logo=npm&label=version
+[npm-url]: https://www.npmjs.com/package/@huolala-tech/page-spy-lynx
+[minified-image]: https://img.shields.io/bundlephobia/min/@huolala-tech/page-spy-lynx
+[minified-url]: https://unpkg.com/browse/@huolala-tech/page-spy-lynx/dist/esm/index.min.js
 
 [English](./README.md) | 中文
 
-# `@huolala-tech/page-spy-react-lynx`
+# `@huolala-tech/page-spy-lynx`
 
 [![SDK version][npm-image]][npm-url]
 [![SDK size][minified-image]][minified-url]
@@ -19,7 +19,7 @@ Lynx 不提供浏览器里的 `window` 和 `document` 对象。本 SDK 不依赖
 建议在后台专属代码里初始化 PageSpy，例如只被后台逻辑引入的入口模块，或 Lynx 的 `useEffect` 中。
 
 ```ts
-import PageSpy from '@huolala-tech/page-spy-react-lynx';
+import PageSpy from '@huolala-tech/page-spy-lynx';
 
 const pageSpy = new PageSpy({
   api: 'example.com',
