@@ -1,8 +1,12 @@
-import { atom, makeMessage, formatErrorObj } from "@huolala-tech/page-spy-base";
-import type { SpyConsole, PageSpyPlugin, OnInitParams } from "@huolala-tech/page-spy-types/index";
-import socketStore from "../helpers/socket";
-import { InitConfig } from "../config";
-import { getGlobal } from "../utils";
+import { atom, makeMessage, formatErrorObj } from '@huolala-tech/page-spy-base';
+import type {
+  SpyConsole,
+  PageSpyPlugin,
+  OnInitParams,
+} from '@huolala-tech/page-spy-types/index';
+import socketStore from '../helpers/socket';
+import { InitConfig } from '../config';
+import { getGlobal } from '../utils';
 
 type GlobalErrorHandler = (error: Error) => void;
 type GlobalRejectionHandler = (event: { reason?: any }) => void;
@@ -10,7 +14,10 @@ type GlobalRejectionHandler = (event: { reason?: any }) => void;
 type ErrorCapableGlobal = Record<string, any> & {
   onerror?: GlobalErrorHandler | null;
   onunhandledrejection?: GlobalRejectionHandler | null;
-  addEventListener?: (type: string, handler: GlobalErrorHandler | GlobalRejectionHandler) => void;
+  addEventListener?: (
+    type: string,
+    handler: GlobalErrorHandler | GlobalRejectionHandler,
+  ) => void;
   removeEventListener?: (
     type: string,
     handler: GlobalErrorHandler | GlobalRejectionHandler,
@@ -20,7 +27,7 @@ type ErrorCapableGlobal = Record<string, any> & {
 /** Error 插件：捕获未处理异常和 Promise rejection，并复用 console 通道上报。 */
 export default class ErrorPlugin implements PageSpyPlugin {
   /** 插件名称。 */
-  public name = "ErrorPlugin";
+  public name = 'ErrorPlugin';
 
   public static hasInitd = false;
 
@@ -55,12 +62,12 @@ export default class ErrorPlugin implements PageSpyPlugin {
     };
 
     this.errorHandlerRef = handler;
-    if (typeof g.addEventListener === "function") {
-      g.addEventListener("error", handler);
+    if (typeof g.addEventListener === 'function') {
+      g.addEventListener('error', handler);
       return;
     }
 
-    if ("onerror" in g) {
+    if ('onerror' in g) {
       this.originOnError = g.onerror || null;
       g.onerror = handler;
     }
@@ -75,12 +82,12 @@ export default class ErrorPlugin implements PageSpyPlugin {
     };
 
     this.rejectionHandlerRef = handler;
-    if (typeof g.addEventListener === "function") {
-      g.addEventListener("unhandledrejection", handler);
+    if (typeof g.addEventListener === 'function') {
+      g.addEventListener('unhandledrejection', handler);
       return;
     }
 
-    if ("onunhandledrejection" in g) {
+    if ('onunhandledrejection' in g) {
       this.originOnUnhandledRejection = g.onunhandledrejection || null;
       g.onunhandledrejection = handler;
     }
@@ -94,11 +101,11 @@ export default class ErrorPlugin implements PageSpyPlugin {
     if (error?.message || error?.stack) {
       const errorDetail = formatErrorObj(error);
       this.sendMessage(error.stack || error.message, errorDetail);
-    } else if (typeof error === "string") {
+    } else if (typeof error === 'string') {
       this.sendMessage(error, null);
     } else {
       const defaultMessage =
-        "[PageSpy] An unknown error occurred and no message or stack trace available";
+        '[PageSpy] An unknown error occurred and no message or stack trace available';
       this.sendMessage(defaultMessage, error);
     }
   }
@@ -110,19 +117,19 @@ export default class ErrorPlugin implements PageSpyPlugin {
     }
 
     const g = getGlobal() as ErrorCapableGlobal;
-    if (typeof g.removeEventListener === "function") {
+    if (typeof g.removeEventListener === 'function') {
       if (this.errorHandlerRef) {
-        g.removeEventListener("error", this.errorHandlerRef);
+        g.removeEventListener('error', this.errorHandlerRef);
       }
       if (this.rejectionHandlerRef) {
-        g.removeEventListener("unhandledrejection", this.rejectionHandlerRef);
+        g.removeEventListener('unhandledrejection', this.rejectionHandlerRef);
       }
     }
 
-    if ("onerror" in g) {
+    if ('onerror' in g) {
       g.onerror = this.originOnError;
     }
-    if ("onunhandledrejection" in g) {
+    if ('onunhandledrejection' in g) {
       g.onunhandledrejection = this.originOnUnhandledRejection;
     }
 
@@ -132,12 +139,15 @@ export default class ErrorPlugin implements PageSpyPlugin {
   }
 
   /** 上报错误消息，允许用户 dataProcessor 拦截或加工。 */
-  public sendMessage(data: any, errorDetail: SpyConsole.DataItem["errorDetail"] | null) {
+  public sendMessage(
+    data: any,
+    errorDetail: SpyConsole.DataItem['errorDetail'] | null,
+  ) {
     const error = {
-      logType: "error",
+      logType: 'error',
       logs: [data],
       time: Date.now(),
-      url: "",
+      url: '',
       errorDetail,
     };
     const processedByUser = this.$pageSpyConfig?.dataProcessor?.console?.(
@@ -146,8 +156,8 @@ export default class ErrorPlugin implements PageSpyPlugin {
     if (processedByUser === false) return;
 
     error.logs = error.logs.map((l) => atom.transformToAtom(l));
-    const message = makeMessage("console", error);
-    socketStore.dispatchEvent("public-data", message);
+    const message = makeMessage('console', error);
+    socketStore.dispatchEvent('public-data', message);
     socketStore.broadcastMessage(message);
   }
 }

@@ -1456,9 +1456,7 @@
         {
           "file": "packages/page-spy-base/package.json",
           "hash": "5487384527453572216",
-          "deps": [
-            "@huolala-tech/page-spy-types"
-          ]
+          "deps": ["@huolala-tech/page-spy-types"]
         },
         {
           "file": "packages/page-spy-base/src/atom.ts",

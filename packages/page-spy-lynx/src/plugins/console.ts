@@ -3,13 +3,13 @@ import type {
   PageSpyPlugin,
   OnInitParams,
   SpyBase,
-} from "@huolala-tech/page-spy-types";
-import { getRandomId, psLog } from "@huolala-tech/page-spy-base/dist/utils";
-import { atom } from "@huolala-tech/page-spy-base/dist/atom";
-import { makeMessage } from "@huolala-tech/page-spy-base/dist/message";
-import socketStore from "../helpers/socket";
-import type { InitConfig } from "../config";
-import { getGlobal } from "../utils";
+} from '@huolala-tech/page-spy-types';
+import { getRandomId, psLog } from '@huolala-tech/page-spy-base/dist/utils';
+import { atom } from '@huolala-tech/page-spy-base/dist/atom';
+import { makeMessage } from '@huolala-tech/page-spy-base/dist/message';
+import socketStore from '../helpers/socket';
+import type { InitConfig } from '../config';
+import { getGlobal } from '../utils';
 
 type ConsoleTarget = Record<string, any>;
 type ConsoleBinding = {
@@ -19,16 +19,22 @@ type ConsoleBinding = {
 };
 
 /** 原生侧可直接调用的全局回调名。 */
-const NATIVE_CONSOLE_GLOBAL = "__PAGE_SPY_LYNX_CONSOLE__";
-const NATIVE_CONSOLE_EVENT = "page-spy-console";
-const NATIVE_CONSOLE_MODULE = "PageSpyConsoleModule";
+const NATIVE_CONSOLE_GLOBAL = '__PAGE_SPY_LYNX_CONSOLE__';
+const NATIVE_CONSOLE_EVENT = 'page-spy-console';
+const NATIVE_CONSOLE_MODULE = 'PageSpyConsoleModule';
 const NATIVE_CONSOLE_POLL_INTERVAL = 250;
 
 type PageSpyConsoleNativeModule = {
   drainMessages(
     callback: (
       payload: string[] | { messages?: string[] } | string | null | undefined,
-      ...rest: (string[] | { messages?: string[] } | string | null | undefined)[]
+      ...rest: (
+        | string[]
+        | { messages?: string[] }
+        | string
+        | null
+        | undefined
+      )[]
     ) => void,
   ): void;
 };
@@ -37,8 +43,12 @@ type PageSpyConsoleNativeModule = {
 const getConsoleBindings = (): ConsoleBinding[] => {
   const globalObject = getGlobal();
   const bindings: ConsoleBinding[] = [];
-  const addBinding = (target: unknown, host?: Record<string, any>, key?: string) => {
-    if (!target || typeof target !== "object") return;
+  const addBinding = (
+    target: unknown,
+    host?: Record<string, any>,
+    key?: string,
+  ) => {
+    if (!target || typeof target !== 'object') return;
     if (bindings.some((item) => item.target === target)) return;
     bindings.push({
       target: target as ConsoleTarget,
@@ -47,17 +57,17 @@ const getConsoleBindings = (): ConsoleBinding[] => {
     });
   };
 
-  addBinding(globalObject.console, globalObject, "console");
-  addBinding(globalObject.lynx?.console, globalObject.lynx, "console");
-  if (typeof globalThis === "object") {
+  addBinding(globalObject.console, globalObject, 'console');
+  addBinding(globalObject.lynx?.console, globalObject.lynx, 'console');
+  if (typeof globalThis === 'object') {
     addBinding(
       (globalThis as Record<string, any>).console,
       globalThis as Record<string, any>,
-      "console",
+      'console',
     );
   }
   try {
-    if (typeof console !== "undefined") {
+    if (typeof console !== 'undefined') {
       addBinding(console);
     }
   } catch {
@@ -106,60 +116,69 @@ const createConsoleProxy = (originConsole: ConsoleTarget) => {
 
 /** 将原生侧 console level 统一映射到 PageSpy 支持的日志类型。 */
 const getNativeConsoleLevel = (value: unknown): SpyConsole.ProxyType => {
-  const level = String(value || "").toLowerCase();
-  if (level === "error") return "error";
-  if (level === "warn" || level === "warning") return "warn";
-  if (level === "info") return "info";
-  if (level === "debug") return "debug";
-  return "log";
+  const level = String(value || '').toLowerCase();
+  if (level === 'error') return 'error';
+  if (level === 'warn' || level === 'warning') return 'warn';
+  if (level === 'info') return 'info';
+  if (level === 'debug') return 'debug';
+  return 'log';
 };
 
 /** 格式化原生调试协议里的参数结构，尽量还原可读值。 */
 const formatNativeConsoleArg = (value: any) => {
-  if (!value || typeof value !== "object") return value;
-  if ("value" in value) return value.value;
-  if ("description" in value) return value.description;
-  if ("unserializableValue" in value) return value.unserializableValue;
-  if ("objectId" in value) return `[${value.subtype || value.type || "object"}]`;
-  if ("type" in value) return `[${value.type}]`;
+  if (!value || typeof value !== 'object') return value;
+  if ('value' in value) return value.value;
+  if ('description' in value) return value.description;
+  if ('unserializableValue' in value) return value.unserializableValue;
+  if ('objectId' in value)
+    return `[${value.subtype || value.type || 'object'}]`;
+  if ('type' in value) return `[${value.type}]`;
   return value;
 };
 
 /** 将原生侧传来的 console payload 解析为 PageSpy console 数据项。 */
-const parseNativeConsolePayload = (payload: any): SpyConsole.DataItem | null => {
+const parseNativeConsolePayload = (
+  payload: any,
+): SpyConsole.DataItem | null => {
   let data = payload;
   if (Array.isArray(data)) {
     data = data[0];
   }
-  if (data && typeof data === "object" && "detail" in data) {
+  if (data && typeof data === 'object' && 'detail' in data) {
     data = data.detail;
   }
-  if (typeof data === "string") {
+  if (typeof data === 'string') {
     try {
       data = JSON.parse(data);
     } catch {
       return {
-        logType: "log",
+        logType: 'log',
         logs: [data],
-        url: "",
+        url: '',
       };
     }
   }
 
-  if (!data || typeof data !== "object") return null;
+  if (!data || typeof data !== 'object') return null;
 
   const args = Array.isArray(data.args) ? data.args : [data.message || data];
   return {
-    logType: getNativeConsoleLevel(data.level || data.type || data.logType || data.method),
+    logType: getNativeConsoleLevel(
+      data.level || data.type || data.logType || data.method,
+    ),
     logs: args.map(formatNativeConsoleArg),
-    url: data.url || "",
+    url: data.url || '',
   };
 };
 
 /** 统一原生模块返回的单条、数组或包装对象消息。 */
 const normalizeNativeConsoleMessages = (payload: any): any[] => {
   if (Array.isArray(payload)) return payload;
-  if (payload && typeof payload === "object" && Array.isArray(payload.messages)) {
+  if (
+    payload &&
+    typeof payload === 'object' &&
+    Array.isArray(payload.messages)
+  ) {
     return payload.messages;
   }
   if (payload == null) return [];
@@ -169,7 +188,7 @@ const normalizeNativeConsoleMessages = (payload: any): any[] => {
 /** 获取宿主注册的控制台消息原生模块。 */
 const getNativeConsoleModule = (): PageSpyConsoleNativeModule | null => {
   const nativeModule = getGlobal().NativeModules?.[NATIVE_CONSOLE_MODULE];
-  if (typeof nativeModule?.drainMessages === "function") {
+  if (typeof nativeModule?.drainMessages === 'function') {
     return nativeModule;
   }
   return null;
@@ -178,7 +197,7 @@ const getNativeConsoleModule = (): PageSpyConsoleNativeModule | null => {
 /** Console 插件：代理 JS console，并接收原生侧 console 日志后转发到 PageSpy。 */
 export default class ConsolePlugin implements PageSpyPlugin {
   /** 插件名称。 */
-  public name: string = "ConsolePlugin";
+  public name: string = 'ConsolePlugin';
 
   /** 保存原始 console 方法，用于插件内部回显和 reset 恢复。 */
   public console: Record<string, any> = {};
@@ -193,7 +212,8 @@ export default class ConsolePlugin implements PageSpyPlugin {
   }[] = [];
 
   /** 原生 console 桥回调引用，reset 时用于移除。 */
-  public nativeConsoleHandler: ((payload: any, ...rest: any[]) => void) | null = null;
+  public nativeConsoleHandler: ((payload: any, ...rest: any[]) => void) | null =
+    null;
 
   /** 标记是否已通过 lynx.add 安装原生事件监听。 */
   public nativeConsoleEventInstalled = false;
@@ -210,7 +230,13 @@ export default class ConsolePlugin implements PageSpyPlugin {
   public static hasInitd = false;
 
   /** 需要代理的 console 方法类型。 */
-  public proxyTypes: SpyConsole.ProxyType[] = ["log", "info", "error", "warn", "debug"];
+  public proxyTypes: SpyConsole.ProxyType[] = [
+    'log',
+    'info',
+    'error',
+    'warn',
+    'debug',
+  ];
 
   public $pageSpyConfig: InitConfig | null = null;
 
@@ -219,7 +245,7 @@ export default class ConsolePlugin implements PageSpyPlugin {
     if (ConsolePlugin.hasInitd) return;
     ConsolePlugin.hasInitd = true;
 
-    socketStore.addListener("debug", ConsolePlugin.handleDebugger);
+    socketStore.addListener('debug', ConsolePlugin.handleDebugger);
 
     this.$pageSpyConfig = config;
     this.init();
@@ -233,11 +259,13 @@ export default class ConsolePlugin implements PageSpyPlugin {
     this.consoleTargets = consoleBindings.map((binding) => {
       const originals: Record<string, any> = {};
       this.proxyTypes.forEach((item) => {
-        originals[item] = binding.target[item] || binding.target.log || (() => {});
+        originals[item] =
+          binding.target[item] || binding.target.log || (() => {});
       });
       return {
         ...binding,
-        originHostValue: binding.host && binding.key ? binding.host[binding.key] : undefined,
+        originHostValue:
+          binding.host && binding.key ? binding.host[binding.key] : undefined,
         originals,
       };
     });
@@ -255,7 +283,7 @@ export default class ConsolePlugin implements PageSpyPlugin {
           printLog({
             logType: item,
             logs: args,
-            url: "",
+            url: '',
           });
         };
         const success = setConsoleMethod(proxyTarget, item, proxy);
@@ -312,12 +340,12 @@ export default class ConsolePlugin implements PageSpyPlugin {
 
     this.nativeConsoleHandler = handler;
     globalObject[NATIVE_CONSOLE_GLOBAL] = handler;
-    if (typeof globalThis === "object") {
+    if (typeof globalThis === 'object') {
       (globalThis as Record<string, any>)[NATIVE_CONSOLE_GLOBAL] = handler;
     }
 
     try {
-      if (typeof globalObject.lynx?.add === "function") {
+      if (typeof globalObject.lynx?.add === 'function') {
         globalObject.lynx.add(NATIVE_CONSOLE_EVENT, handler);
         this.nativeConsoleEventInstalled = true;
       }
@@ -333,7 +361,10 @@ export default class ConsolePlugin implements PageSpyPlugin {
     const globalObject = getGlobal();
     if (this.nativeConsoleEventInstalled && this.nativeConsoleHandler) {
       try {
-        globalObject.lynx?.remove?.(NATIVE_CONSOLE_EVENT, this.nativeConsoleHandler);
+        globalObject.lynx?.remove?.(
+          NATIVE_CONSOLE_EVENT,
+          this.nativeConsoleHandler,
+        );
       } catch {
         // ignored
       }
@@ -342,8 +373,9 @@ export default class ConsolePlugin implements PageSpyPlugin {
       delete globalObject[NATIVE_CONSOLE_GLOBAL];
     }
     if (
-      typeof globalThis === "object" &&
-      (globalThis as Record<string, any>)[NATIVE_CONSOLE_GLOBAL] === this.nativeConsoleHandler
+      typeof globalThis === 'object' &&
+      (globalThis as Record<string, any>)[NATIVE_CONSOLE_GLOBAL] ===
+        this.nativeConsoleHandler
     ) {
       delete (globalThis as Record<string, any>)[NATIVE_CONSOLE_GLOBAL];
     }
@@ -365,14 +397,20 @@ export default class ConsolePlugin implements PageSpyPlugin {
       const nativeModule = getNativeConsoleModule();
       if (!nativeModule) {
         this.nativeConsoleMissingCount += 1;
-        if (this.nativeConsoleMissingCount >= 4 && !this.nativeConsoleMissingWarned) {
+        if (
+          this.nativeConsoleMissingCount >= 4 &&
+          !this.nativeConsoleMissingWarned
+        ) {
           this.nativeConsoleMissingWarned = true;
           psLog.warn(
-            "NativeModules.PageSpyConsoleModule is not available; native iOS/Android console messages require registering PageSpyConsoleModule and LynxInspectorConsoleDelegate",
+            'NativeModules.PageSpyConsoleModule is not available; native iOS/Android console messages require registering PageSpyConsoleModule and LynxInspectorConsoleDelegate',
           );
         }
         if (this.nativeConsoleHandler) {
-          this.nativeConsolePollTimer = setTimeout(poll, NATIVE_CONSOLE_POLL_INTERVAL);
+          this.nativeConsolePollTimer = setTimeout(
+            poll,
+            NATIVE_CONSOLE_POLL_INTERVAL,
+          );
         } else {
           this.nativeConsolePollTimer = null;
         }
@@ -392,7 +430,10 @@ export default class ConsolePlugin implements PageSpyPlugin {
         });
 
         if (this.nativeConsoleHandler) {
-          this.nativeConsolePollTimer = setTimeout(poll, NATIVE_CONSOLE_POLL_INTERVAL);
+          this.nativeConsolePollTimer = setTimeout(
+            poll,
+            NATIVE_CONSOLE_POLL_INTERVAL,
+          );
         } else {
           this.nativeConsolePollTimer = null;
         }
@@ -408,13 +449,13 @@ export default class ConsolePlugin implements PageSpyPlugin {
     reply: (data: any) => void,
   ) {
     const { type, data } = source;
-    if (type === "debug") {
-      const originMsg = makeMessage("console", {
-        logType: "debug-origin",
+    if (type === 'debug') {
+      const originMsg = makeMessage('console', {
+        logType: 'debug-origin',
         logs: [
           {
             id: getRandomId(),
-            type: "debug-origin",
+            type: 'debug-origin',
             value: data,
           },
         ],
@@ -423,17 +464,17 @@ export default class ConsolePlugin implements PageSpyPlugin {
       try {
         // eslint-disable-next-line no-new-func, @typescript-eslint/no-implied-eval
         const result = new Function(`return ${data}`)();
-        const evalMsg = makeMessage("console", {
-          logType: "debug-eval",
+        const evalMsg = makeMessage('console', {
+          logType: 'debug-eval',
           logs: [atom.transformToAtom(result)],
         });
         reply(evalMsg);
       } catch (err) {
-        const errMsg = makeMessage("console", {
-          logType: "error",
+        const errMsg = makeMessage('console', {
+          logType: 'error',
           logs: [
             {
-              type: "error",
+              type: 'error',
               value: (err as Error).stack,
             },
           ],
@@ -463,7 +504,7 @@ export default class ConsolePlugin implements PageSpyPlugin {
         const print = this.console[data.logType] || this.console.log;
         print?.(...data.logs);
       }
-      const atomLog = makeMessage("console", {
+      const atomLog = makeMessage('console', {
         ...data,
         time: Date.now(),
         logs: data.logs.map((log) => {
@@ -473,7 +514,7 @@ export default class ConsolePlugin implements PageSpyPlugin {
       socketStore.broadcastMessage(atomLog);
 
       if (!this.$pageSpyConfig?.serializeData) {
-        socketStore.dispatchEvent("public-data", atomLog);
+        socketStore.dispatchEvent('public-data', atomLog);
       } else {
         const serializeLog = {
           ...atomLog,
@@ -484,7 +525,7 @@ export default class ConsolePlugin implements PageSpyPlugin {
             }),
           },
         };
-        socketStore.dispatchEvent("public-data", serializeLog);
+        socketStore.dispatchEvent('public-data', serializeLog);
       }
     }
   }

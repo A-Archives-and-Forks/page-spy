@@ -37,7 +37,7 @@ export default class FetchProxy extends RNNetworkProxyBase {
       return;
     }
     this.fetch = originFetch;
-    
+
     globalThis.fetch = function (
       input: RequestInfo | URL,
       init: RequestInit = {},

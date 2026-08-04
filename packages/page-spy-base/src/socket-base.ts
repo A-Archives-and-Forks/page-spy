@@ -466,7 +466,8 @@ export abstract class SocketStoreBase {
     const { latestId } = message.source.data;
 
     const msgIndex = this.messages.findIndex(
-      (i, idx) => idx >= this.messageHead && i.content.data.data.id === latestId,
+      (i, idx) =>
+        idx >= this.messageHead && i.content.data.data.id === latestId,
     );
 
     /* c8 ignore start */

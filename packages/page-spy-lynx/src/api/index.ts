@@ -1,7 +1,7 @@
-import type { Client } from "@huolala-tech/page-spy-base";
-import { getRandomId } from "@huolala-tech/page-spy-base/dist/utils";
-import { Config, InitConfig } from "../config";
-import { getGlobal, joinQuery } from "../utils";
+import type { Client } from '@huolala-tech/page-spy-base';
+import { getRandomId } from '@huolala-tech/page-spy-base/dist/utils';
+import { Config, InitConfig } from '../config';
+import { getGlobal, joinQuery } from '../utils';
 
 interface TResponse<T> {
   code: string;
@@ -20,11 +20,14 @@ interface TCreateRoom {
 }
 
 /** 根据配置选择 HTTP 与 WebSocket 协议头。 */
-const getScheme = (enableSSL: InitConfig["enableSSL"]) => {
-  return enableSSL === false ? ["http://", "ws://"] : ["https://", "wss://"];
+const getScheme = (enableSSL: InitConfig['enableSSL']) => {
+  return enableSSL === false ? ['http://', 'ws://'] : ['https://', 'wss://'];
 };
 
-type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+type FetchLike = (
+  input: RequestInfo | URL,
+  init?: RequestInit,
+) => Promise<Response>;
 
 type NativeModuleFetch = (data: {
   url: string;
@@ -48,7 +51,7 @@ type NativeModuleFetchModule = {
 const headersToRecord = (headers?: HeadersInit): Record<string, string> => {
   if (!headers) return {};
 
-  if (typeof Headers === "function" && headers instanceof Headers) {
+  if (typeof Headers === 'function' && headers instanceof Headers) {
     return [...headers.entries()].reduce(
       (acc, [key, value]) => {
         acc[key] = value;
@@ -73,24 +76,25 @@ const headersToRecord = (headers?: HeadersInit): Record<string, string> => {
 
 /** 从 fetch 入参中提取 URL 字符串，兼容 string、URL 和 Request-like 对象。 */
 const getInputUrl = (input: RequestInfo | URL) => {
-  if (typeof input === "string") return input;
-  if (typeof URL === "function" && input instanceof URL) return input.toString();
+  if (typeof input === 'string') return input;
+  if (typeof URL === 'function' && input instanceof URL)
+    return input.toString();
   return (input as { url: string }).url;
 };
 
 /** 从 fetch 入参中提取请求方法，默认 GET。 */
 const getInputMethod = (input: RequestInfo | URL, init?: RequestInit) => {
   if (init?.method) return init.method;
-  if (typeof input === "object" && "method" in input && input.method) {
+  if (typeof input === 'object' && 'method' in input && input.method) {
     return input.method;
   }
-  return "GET";
+  return 'GET';
 };
 
 /** 从 fetch 入参中提取请求头，优先使用 init.headers。 */
 const getInputHeaders = (input: RequestInfo | URL, init?: RequestInit) => {
   if (init?.headers) return headersToRecord(init.headers);
-  if (typeof input === "object" && "headers" in input) {
+  if (typeof input === 'object' && 'headers' in input) {
     return headersToRecord(input.headers);
   }
   return {};
@@ -108,12 +112,12 @@ const createNativeModuleResponse = (raw: {
   if (raw.error) {
     throw Error(raw.error);
   }
-  const body = raw.body || "";
+  const body = raw.body || '';
   const responseHeaders = raw.headers || {};
   return {
     ok: raw.ok ?? true,
     status: raw.status ?? 200,
-    statusText: raw.statusText || "",
+    statusText: raw.statusText || '',
     headers: {
       get: (key: string) => responseHeaders[key.toLowerCase()] ?? null,
       entries: () => Object.entries(responseHeaders),
@@ -126,17 +130,22 @@ const createNativeModuleResponse = (raw: {
 /** 判断当前是否为需要优先走 lynx.fetch 的原生 Lynx 平台。 */
 const isNativeLynxPlatform = (globalObject: Record<string, any>) => {
   const platform = String(
-    globalObject.SystemInfo?.platform || globalObject.lynx?.__globalProps?.platform || "",
+    globalObject.SystemInfo?.platform ||
+      globalObject.lynx?.__globalProps?.platform ||
+      '',
   ).toLowerCase();
 
-  return ["android", "ios", "harmony"].includes(platform);
+  return ['android', 'ios', 'harmony'].includes(platform);
 };
 
 /** 包装 lynx.fetch，补齐部分平台需要 Request 实例作为入参的行为。 */
-const createLynxFetch = (globalObject: Record<string, any>, lynxFetch: FetchLike): FetchLike => {
+const createLynxFetch = (
+  globalObject: Record<string, any>,
+  lynxFetch: FetchLike,
+): FetchLike => {
   return (input, init) => {
     const RequestCtor = globalObject.Request || globalThis.Request;
-    if (typeof RequestCtor === "function" && !(input instanceof RequestCtor)) {
+    if (typeof RequestCtor === 'function' && !(input instanceof RequestCtor)) {
       return lynxFetch.call(globalObject.lynx, new RequestCtor(input, init));
     }
     return lynxFetch.call(globalObject.lynx, input, init);
@@ -144,13 +153,15 @@ const createLynxFetch = (globalObject: Record<string, any>, lynxFetch: FetchLike
 };
 
 /** 将 NativeModules.FetchModule 适配成 fetch 风格函数。 */
-const createNativeModuleFetch = (nativeModule: NativeModuleFetchModule): FetchLike => {
+const createNativeModuleFetch = (
+  nativeModule: NativeModuleFetchModule,
+): FetchLike => {
   return async (input, init) => {
     const raw = await nativeModule.fetch.call(nativeModule, {
       url: getInputUrl(input),
       method: getInputMethod(input, init),
       headers: getInputHeaders(input, init),
-      body: typeof init?.body === "string" ? init.body : undefined,
+      body: typeof init?.body === 'string' ? init.body : undefined,
     });
     return createNativeModuleResponse(raw);
   };
@@ -162,24 +173,24 @@ const getRuntimeFetch = (): FetchLike => {
   const lynxFetch = globalObject.lynx?.fetch;
   const nativeModuleFetchModule = globalObject.NativeModules?.FetchModule;
 
-  if (isNativeLynxPlatform(globalObject) && typeof lynxFetch === "function") {
+  if (isNativeLynxPlatform(globalObject) && typeof lynxFetch === 'function') {
     return createLynxFetch(globalObject, lynxFetch);
   }
 
-  if (typeof nativeModuleFetchModule?.fetch === "function") {
+  if (typeof nativeModuleFetchModule?.fetch === 'function') {
     return createNativeModuleFetch(nativeModuleFetchModule);
   }
 
   const globalFetch = globalObject.fetch;
-  if (typeof globalFetch === "function") {
+  if (typeof globalFetch === 'function') {
     return globalFetch.bind(globalObject);
   }
 
-  if (typeof lynxFetch === "function") {
+  if (typeof lynxFetch === 'function') {
     return createLynxFetch(globalObject, lynxFetch);
   }
 
-  throw Error("fetch is not available in current Lynx runtime");
+  throw Error('fetch is not available in current Lynx runtime');
 };
 
 /** PageSpy 后端 API 封装，负责创建调试房间和拼接房间 WebSocket 地址。 */
@@ -189,7 +200,7 @@ export default class Request {
     public client: Client,
   ) {
     if (!config.get().api) {
-      throw Error("The api base url cannot be empty");
+      throw Error('The api base url cannot be empty');
     }
   }
 
@@ -199,7 +210,9 @@ export default class Request {
 
   /** 当前实例使用的 HTTP/WS 协议头。 */
   getScheme() {
-    return this.config.get().enableSSL ? ["https://", "wss://"] : ["http://", "ws://"];
+    return this.config.get().enableSSL
+      ? ['https://', 'wss://']
+      : ['http://', 'ws://'];
   }
 
   /** 创建调试房间并返回房间名、房间号和 WebSocket 地址。 */
@@ -207,16 +220,19 @@ export default class Request {
     const config = this.config.get();
     const scheme = getScheme(config.enableSSL);
     const name = this.client.getName();
-    console.log("Creating room with name:", name);
+    console.log('Creating room with name:', name);
     const query = joinQuery({
       name: encodeURIComponent(name),
       group: config.project,
       title: config.title,
     });
 
-    return getRuntimeFetch()(`${scheme[0]}${this.base}/api/v1/room/create?${query}`, {
-      method: "POST",
-    })
+    return getRuntimeFetch()(
+      `${scheme[0]}${this.base}/api/v1/room/create?${query}`,
+      {
+        method: 'POST',
+      },
+    )
       .then((res) => res.json())
       .then((res: TResponse<TCreateRoom>) => {
         // eslint-disable-next-line @typescript-eslint/no-shadow
@@ -241,7 +257,7 @@ export default class Request {
     return `${scheme[1]}${this.base}/api/v1/ws/room/join?${joinQuery({
       address,
       name: `client:${getRandomId()}`,
-      userId: "Client",
+      userId: 'Client',
       forceCreate: true,
       useSecret,
       secret,

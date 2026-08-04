@@ -6,14 +6,14 @@ import {
   NetworkProxyBase,
   PAGE_SPY_WS_ENDPOINT,
   WebSocketMessage,
-} from "@huolala-tech/page-spy-base";
-import { OnInitParams, PageSpyPlugin } from "@huolala-tech/page-spy-types";
-import WebNetworkProxyBase from "./proxy/base";
-import { InitConfig } from "../../config";
+} from '@huolala-tech/page-spy-base';
+import { OnInitParams, PageSpyPlugin } from '@huolala-tech/page-spy-types';
+import WebNetworkProxyBase from './proxy/base';
+import { InitConfig } from '../../config';
 
 /** 判断 WebSocket 构造器是否可继承和实例化。 */
 const isConstructableWebSocket = (WebSocketCtor: any) => {
-  if (typeof WebSocketCtor !== "function") {
+  if (typeof WebSocketCtor !== 'function') {
     return false;
   }
   try {
@@ -25,9 +25,12 @@ const isConstructableWebSocket = (WebSocketCtor: any) => {
 };
 
 /** WebSocket 网络代理：继承原始 WebSocket，采集连接和消息事件。 */
-export default class WebSocketPlugin extends WebNetworkProxyBase implements PageSpyPlugin {
+export default class WebSocketPlugin
+  extends WebNetworkProxyBase
+  implements PageSpyPlugin
+{
   /** 插件名称。 */
-  public name = "WebSocketPlugin";
+  public name = 'WebSocketPlugin';
 
   public static hasInitd = false;
 
@@ -71,18 +74,23 @@ export default class WebSocketPlugin extends WebNetworkProxyBase implements Page
 
         // 设置 WebSocket 握手的基础请求信息。
         this._req.url = uri.toString();
-        this._req.method = "GET";
-        this._req.requestType = "websocket";
+        this._req.method = 'GET';
+        this._req.requestType = 'websocket';
         this._req.requestHeader = [
-          ["Upgrade", "websocket"],
-          ["Connection", "Upgrade"],
-          ["Sec-WebSocket-Version", "13"],
+          ['Upgrade', 'websocket'],
+          ['Connection', 'Upgrade'],
+          ['Sec-WebSocket-Version', '13'],
         ];
 
         const protocols = args[0];
         if (protocols) {
-          const protocolsStr = Array.isArray(protocols) ? protocols.join(", ") : protocols;
-          this._req.requestHeader.push(["Sec-WebSocket-Protocol", protocolsStr]);
+          const protocolsStr = Array.isArray(protocols)
+            ? protocols.join(', ')
+            : protocols;
+          this._req.requestHeader.push([
+            'Sec-WebSocket-Protocol',
+            protocolsStr,
+          ]);
         }
         this._req.readyState = ReqReadyState.UNSENT;
         this._req.startTime = Date.now();
@@ -92,33 +100,33 @@ export default class WebSocketPlugin extends WebNetworkProxyBase implements Page
 
       /** 监听 WebSocket 生命周期和消息事件，并转成网络面板记录。 */
       private setupEventListeners() {
-        this.addEventListener("open", () => {
+        this.addEventListener('open', () => {
           if (!this._req || !this._requestId) return;
           this._req.readyState = ReqReadyState.OPENED;
           this._req.status = 101; // WebSocket 握手成功：Switching Protocols。
-          this._req.statusText = "Switching Protocols";
+          this._req.statusText = 'Switching Protocols';
           this._req.endTime = Date.now();
           this._req.costTime = this._req.endTime - this._req.startTime;
           this._req.responseHeader = [
-            ["Upgrade", "websocket"],
-            ["Connection", "Upgrade"],
+            ['Upgrade', 'websocket'],
+            ['Connection', 'Upgrade'],
           ];
           plugin.sendRequestItem(this._requestId, this._req);
         });
 
         // 监听消息接收事件。
-        this.addEventListener("message", (event) => {
+        this.addEventListener('message', (event) => {
           if (!this._req || !this._requestId) return;
 
           const message: WebSocketMessage = {
-            type: "receive",
+            type: 'receive',
             data: event.data,
             timestamp: Date.now(),
           };
 
           this._req.readyState = ReqReadyState.DONE;
           this._req.status = 200;
-          this._req.statusText = "OK";
+          this._req.statusText = 'OK';
           this._req.response = message;
           this._req.endTime = Date.now();
           this._req.costTime = this._req.endTime - this._req.startTime;
@@ -128,11 +136,11 @@ export default class WebSocketPlugin extends WebNetworkProxyBase implements Page
         });
 
         // 监听错误事件。
-        this.addEventListener("error", () => {
+        this.addEventListener('error', () => {
           if (!this._req || !this._requestId) return;
           this._req.readyState = ReqReadyState.DONE;
           this._req.status = 400;
-          this._req.statusText = "WebSocket Error";
+          this._req.statusText = 'WebSocket Error';
           this._req.endTime = Date.now();
           this._req.costTime = this._req.endTime - this._req.startTime;
 
@@ -140,11 +148,11 @@ export default class WebSocketPlugin extends WebNetworkProxyBase implements Page
         });
 
         // 监听连接关闭事件。
-        this.addEventListener("close", (event) => {
+        this.addEventListener('close', (event) => {
           if (!this._req || !this._requestId) return;
           this._req.readyState = ReqReadyState.DONE;
           this._req.status = Number(event.code);
-          this._req.statusText = event.reason || "Connection Closed";
+          this._req.statusText = event.reason || 'Connection Closed';
           this._req.endTime = Date.now();
           this._req.costTime = this._req.endTime - this._req.startTime;
 
@@ -156,14 +164,14 @@ export default class WebSocketPlugin extends WebNetworkProxyBase implements Page
       send(data: string | ArrayBuffer | ArrayBufferView | Blob) {
         if (this._req && this._requestId) {
           const message: WebSocketMessage = {
-            type: "send",
+            type: 'send',
             data: this.formatSendData(data),
             timestamp: Date.now(),
           };
 
           this._req.readyState = ReqReadyState.DONE;
           this._req.status = 200;
-          this._req.statusText = "OK";
+          this._req.statusText = 'OK';
           this._req.response = message;
           this._req.lastEventId = String(this._lastEventId++);
           this._req.endTime = Date.now();
@@ -175,15 +183,17 @@ export default class WebSocketPlugin extends WebNetworkProxyBase implements Page
       }
 
       /** 将不同类型的发送数据转换为可展示的字符串。 */
-      private formatSendData(data: string | ArrayBuffer | ArrayBufferView | Blob): string {
-        if (typeof data === "string") {
+      private formatSendData(
+        data: string | ArrayBuffer | ArrayBufferView | Blob,
+      ): string {
+        if (typeof data === 'string') {
           return data;
         }
         if (data instanceof Blob) {
-          return "[Blob data]";
+          return '[Blob data]';
         }
         if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
-          return "[Binary data]";
+          return '[Binary data]';
         }
         return String(data);
       }

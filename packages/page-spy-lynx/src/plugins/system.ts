@@ -1,13 +1,17 @@
-import { type Client } from "@huolala-tech/page-spy-base";
-import { makeMessage } from "@huolala-tech/page-spy-base/dist/message";
-import type { SpySystem, PageSpyPlugin, OnInitParams } from "@huolala-tech/page-spy-types";
-import socketStore from "../helpers/socket";
-import { InitConfig } from "../config";
+import { type Client } from '@huolala-tech/page-spy-base';
+import { makeMessage } from '@huolala-tech/page-spy-base/dist/message';
+import type {
+  SpySystem,
+  PageSpyPlugin,
+  OnInitParams,
+} from '@huolala-tech/page-spy-types';
+import socketStore from '../helpers/socket';
+import { InitConfig } from '../config';
 
 /** System 插件：上报 Lynx 客户端系统信息，并响应远端刷新请求。 */
 export default class SystemPlugin implements PageSpyPlugin {
   /** 插件名称。 */
-  public name = "SystemPlugin";
+  public name = 'SystemPlugin';
 
   public static hasInitd = false;
 
@@ -25,9 +29,9 @@ export default class SystemPlugin implements PageSpyPlugin {
     this.client = client;
     this.onceInitPublicData();
 
-    socketStore.addListener("refresh", ({ source }, reply) => {
+    socketStore.addListener('refresh', ({ source }, reply) => {
       const { data } = source;
-      if (data === "system") {
+      if (data === 'system') {
         const info = this.getSystemInfo();
         if (info === null) return;
 
@@ -41,7 +45,7 @@ export default class SystemPlugin implements PageSpyPlugin {
     const info = this.getSystemInfo();
     if (info === null) return;
 
-    socketStore.dispatchEvent("public-data", info);
+    socketStore.dispatchEvent('public-data', info);
   }
 
   /** 重置初始化标记，下一次初始化可重新注册监听。 */
@@ -61,6 +65,6 @@ export default class SystemPlugin implements PageSpyPlugin {
     const processedByUser = this.$pageSpyConfig?.dataProcessor?.system?.(info);
 
     if (processedByUser === false) return null;
-    return makeMessage("system", info);
+    return makeMessage('system', info);
   }
 }

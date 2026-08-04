@@ -129,9 +129,7 @@ The JavaScript contract is:
 ```ts
 declare let NativeModules: {
   PageSpyConsoleModule: {
-    drainMessages(
-      callback: (messages: string[]) => void,
-    ): void;
+    drainMessages(callback: (messages: string[]) => void): void;
   };
 };
 ```

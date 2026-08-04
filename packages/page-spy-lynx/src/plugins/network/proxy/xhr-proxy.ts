@@ -1,4 +1,4 @@
-import { RequestItem } from "@huolala-tech/page-spy-base/dist/request-item";
+import { RequestItem } from '@huolala-tech/page-spy-base/dist/request-item';
 import {
   blob2base64Async,
   toStringTag,
@@ -7,15 +7,18 @@ import {
   getRandomId,
   isString,
   psLog,
-} from "@huolala-tech/page-spy-base/dist/utils";
-import { Reason, MAX_SIZE } from "@huolala-tech/page-spy-base/dist/network/common";
-import LynxNetworkProxyBase from "./base";
-import { addContentTypeHeader, getFormattedBody } from "../common";
-import { getGlobal } from "../../../utils";
+} from '@huolala-tech/page-spy-base/dist/utils';
+import {
+  Reason,
+  MAX_SIZE,
+} from '@huolala-tech/page-spy-base/dist/network/common';
+import LynxNetworkProxyBase from './base';
+import { addContentTypeHeader, getFormattedBody } from '../common';
+import { getGlobal } from '../../../utils';
 
 const isLynxBlob = (value: unknown): value is Blob => {
   const BlobCtor = getGlobal().Blob;
-  return typeof BlobCtor === "function" && value instanceof BlobCtor;
+  return typeof BlobCtor === 'function' && value instanceof BlobCtor;
 };
 
 /**
@@ -30,7 +33,7 @@ const isLynxBlob = (value: unknown): value is Blob => {
  * it for compatibility, but fetch must not add that header to outgoing requests
  * because it can trigger CORS preflight failures.
  */
-export const IS_FETCH_HEADER = "page-spy-is-fetch";
+export const IS_FETCH_HEADER = 'page-spy-is-fetch';
 
 let fetchProxyRequestDepth = 0;
 
@@ -58,13 +61,13 @@ declare global {
 /** XHR 网络代理：改写 open/send/setRequestHeader 采集请求生命周期。 */
 class XhrProxy extends LynxNetworkProxyBase {
   /** 原始 open 方法，reset 时恢复。 */
-  public xhrOpen: XMLHttpRequest["open"] | null = null;
+  public xhrOpen: XMLHttpRequest['open'] | null = null;
 
   /** 原始 send 方法，reset 时恢复。 */
-  public xhrSend: XMLHttpRequest["send"] | null = null;
+  public xhrSend: XMLHttpRequest['send'] | null = null;
 
   /** 原始 setRequestHeader 方法，reset 时恢复。 */
-  public xhrSetRequestHeader: XMLHttpRequest["setRequestHeader"] | null = null;
+  public xhrSetRequestHeader: XMLHttpRequest['setRequestHeader'] | null = null;
 
   public constructor() {
     super();
@@ -75,7 +78,7 @@ class XhrProxy extends LynxNetworkProxyBase {
   public initProxyHandler() {
     const XHR = getGlobal().XMLHttpRequest as typeof XMLHttpRequest | undefined;
     if (
-      typeof XHR !== "function" ||
+      typeof XHR !== 'function' ||
       !XHR.prototype?.open ||
       !XHR.prototype?.send ||
       !XHR.prototype?.setRequestHeader
@@ -123,20 +126,26 @@ class XhrProxy extends LynxNetworkProxyBase {
         }
         req.requestHeader.push([key, value]);
       } /* c8 ignore start */ else if (!this.isFetch) {
-        psLog.warn("The request object is not found on XMLHttpRequest's setRequestHeader event");
+        psLog.warn(
+          "The request object is not found on XMLHttpRequest's setRequestHeader event",
+        );
       } /* c8 ignore stop */
       setRequestHeader.apply(this, [key, value]);
     };
 
     XHR.prototype.send = function (body) {
       const XMLReq = this;
-      const { pageSpyRequestId, pageSpyRequestMethod = "GET", pageSpyRequestUrl = "" } = XMLReq;
+      const {
+        pageSpyRequestId,
+        pageSpyRequestMethod = 'GET',
+        pageSpyRequestUrl = '',
+      } = XMLReq;
       const req = that.getRequest(pageSpyRequestId);
 
       /** readystatechange 监听放在 send 阶段，避免 fetch 触发的 XHR 在 open 后被忽略，
        * 却已经提前触发 readystatechange，导致调试面板出现没有后续响应的空请求行。
        */
-      XMLReq.addEventListener("readystatechange", async () => {
+      XMLReq.addEventListener('readystatechange', async () => {
         if (req) {
           req.readyState = XMLReq.readyState;
 
@@ -145,7 +154,7 @@ class XhrProxy extends LynxNetworkProxyBase {
             case XMLReq.UNSENT:
             case XMLReq.OPENED:
               req.status = XMLReq.status;
-              req.statusText = "Pending";
+              req.statusText = 'Pending';
               if (!req.startTime) {
                 req.startTime = Date.now();
               }
@@ -153,13 +162,13 @@ class XhrProxy extends LynxNetworkProxyBase {
             // 收到响应头。
             case XMLReq.HEADERS_RECEIVED:
               req.status = XMLReq.status;
-              req.statusText = "Loading";
-              const header = XMLReq.getAllResponseHeaders() || "";
+              req.statusText = 'Loading';
+              const header = XMLReq.getAllResponseHeaders() || '';
               const headerArr = header.trim().split(/[\r\n]+/);
               req.responseHeader = headerArr.reduce(
                 (acc, cur) => {
-                  const [headerKey, ...parts] = cur.split(": ");
-                  acc.push([headerKey, parts.join(": ")]);
+                  const [headerKey, ...parts] = cur.split(': ');
+                  acc.push([headerKey, parts.join(': ')]);
                   return acc;
                 },
                 [] as [string, string][],
@@ -168,33 +177,42 @@ class XhrProxy extends LynxNetworkProxyBase {
             // 响应体加载中。
             case XMLReq.LOADING:
               req.status = XMLReq.status;
-              req.statusText = "Loading";
+              req.statusText = 'Loading';
               break;
             // 请求完成，格式化响应体并上报最终状态。
             case XMLReq.DONE:
               req.status = XMLReq.status;
-              req.statusText = "Done";
+              req.statusText = 'Done';
               req.endTime = Date.now();
               req.costTime = req.endTime - (req.startTime || req.endTime);
 
               let { responseType } = XMLReq;
-              if (!responseType || (XMLReq.isFetch && responseType === "blob")) {
-                const contentType = XMLReq.getResponseHeader("content-type");
+              if (
+                !responseType ||
+                (XMLReq.isFetch && responseType === 'blob')
+              ) {
+                const contentType = XMLReq.getResponseHeader('content-type');
                 if (contentType) {
-                  if (contentType.includes("application/json")) {
-                    responseType = "json";
+                  if (contentType.includes('application/json')) {
+                    responseType = 'json';
                   }
 
-                  if (contentType.includes("text/html") || contentType.includes("text/plain")) {
-                    responseType = "text";
+                  if (
+                    contentType.includes('text/html') ||
+                    contentType.includes('text/plain')
+                  ) {
+                    responseType = 'text';
                   }
                 }
               }
               if (!responseType) {
-                responseType = "blob";
+                responseType = 'blob';
               }
               req.responseType = responseType;
-              const formatResult = await that.formatResponse(XMLReq, responseType);
+              const formatResult = await that.formatResponse(
+                XMLReq,
+                responseType,
+              );
               getObjectKeys(formatResult).forEach((key) => {
                 req[key] = formatResult[key];
               });
@@ -202,12 +220,14 @@ class XhrProxy extends LynxNetworkProxyBase {
             /* c8 ignore next 4 */
             default:
               req.status = XMLReq.status;
-              req.statusText = "Unknown";
+              req.statusText = 'Unknown';
               break;
           }
           that.sendRequestItem(XMLReq.pageSpyRequestId, req);
         } /* c8 ignore start */ else if (!this.isFetch) {
-          psLog.warn("The request object is not found on XMLHttpRequest's readystatechange event");
+          psLog.warn(
+            "The request object is not found on XMLHttpRequest's readystatechange event",
+          );
         }
         /* c8 ignore stop */
       });
@@ -216,13 +236,13 @@ class XhrProxy extends LynxNetworkProxyBase {
         // send 阶段补齐请求信息和请求体，避免 open 阶段缺少 body。
         const URLCtor = getGlobal().URL;
         req.url =
-          typeof URLCtor === "function"
+          typeof URLCtor === 'function'
             ? new URLCtor(pageSpyRequestUrl).toString()
             : String(pageSpyRequestUrl);
         req.method = pageSpyRequestMethod.toUpperCase();
-        req.requestType = "xhr";
+        req.requestType = 'xhr';
         req.withCredentials = XMLReq.withCredentials;
-        if (req.method !== "GET") {
+        if (req.method !== 'GET') {
           req.requestHeader = addContentTypeHeader(req.requestHeader, body);
           getFormattedBody(body).then((res) => {
             req.requestPayload = res;
@@ -230,7 +250,9 @@ class XhrProxy extends LynxNetworkProxyBase {
           });
         }
       } /* c8 ignore start */ else if (!this.isFetch) {
-        psLog.warn("The request object is not found on XMLHttpRequest's send event");
+        psLog.warn(
+          "The request object is not found on XMLHttpRequest's send event",
+        );
       } /* c8 ignore stop */
       return send.apply(XMLReq, [body]);
     };
@@ -239,7 +261,7 @@ class XhrProxy extends LynxNetworkProxyBase {
   /** 恢复 XHR 原型上的原始方法。 */
   public reset() {
     const XHR = getGlobal().XMLHttpRequest as typeof XMLHttpRequest | undefined;
-    if (typeof XHR !== "function" || !XHR.prototype) {
+    if (typeof XHR !== 'function' || !XHR.prototype) {
       return;
     }
     if (this.xhrOpen) {
@@ -255,19 +277,22 @@ class XhrProxy extends LynxNetworkProxyBase {
 
   // eslint-disable-next-line class-methods-use-this
   /** 按 XHR responseType 格式化响应体，供调试面板展示。 */
-  public async formatResponse(XMLReq: XMLHttpRequest, type: XMLHttpRequestResponseType) {
+  public async formatResponse(
+    XMLReq: XMLHttpRequest,
+    type: XMLHttpRequestResponseType,
+  ) {
     const result: {
-      response: RequestItem["response"];
-      responseReason: RequestItem["responseReason"];
+      response: RequestItem['response'];
+      responseReason: RequestItem['responseReason'];
     } = {
-      response: "",
+      response: '',
       responseReason: null,
     } as const;
 
     // XHR 响应格式化依赖 responseType；fetch 则主要依赖 content-type 推断。
     switch (type) {
-      case "":
-      case "text":
+      case '':
+      case 'text':
         if (isString(XMLReq.response)) {
           try {
             result.response = JSON.parse(XMLReq.response);
@@ -275,25 +300,27 @@ class XhrProxy extends LynxNetworkProxyBase {
             // 非 JSON 字符串时按原文本展示。
             result.response = XMLReq.response;
           }
-        } /* c8 ignore start */ else if (typeof XMLReq.response !== "undefined") {
+        } /* c8 ignore start */ else if (
+          typeof XMLReq.response !== 'undefined'
+        ) {
           result.response = toStringTag(XMLReq.response);
         }
         /* c8 ignore stop */
         break;
-      case "json":
-        if (typeof XMLReq.response !== "undefined") {
+      case 'json':
+        if (typeof XMLReq.response !== 'undefined') {
           result.response = XMLReq.response;
         }
         break;
-      case "blob":
-      case "arraybuffer":
+      case 'blob':
+      case 'arraybuffer':
         if (XMLReq.response) {
           // ArrayBuffer 尽量转成 Blob 后复用 Blob 的体积限制和 base64 格式化逻辑。
           let blob = XMLReq.response;
           if (isArrayBuffer(blob)) {
-            const contentType = XMLReq.getResponseHeader("content-type");
+            const contentType = XMLReq.getResponseHeader('content-type');
             const BlobCtor = getGlobal().Blob;
-            if (contentType && typeof BlobCtor === "function") {
+            if (contentType && typeof BlobCtor === 'function') {
               blob = new BlobCtor([blob], { type: contentType });
             }
           }
@@ -306,15 +333,15 @@ class XhrProxy extends LynxNetworkProxyBase {
                 psLog.error(e.message);
               } /* c8 ignore stop */
             } else {
-              result.response = "[object Blob]";
+              result.response = '[object Blob]';
               result.responseReason = Reason.EXCEED_SIZE;
             }
           }
         }
         break;
-      case "document":
+      case 'document':
       default:
-        if (typeof XMLReq.response !== "undefined") {
+        if (typeof XMLReq.response !== 'undefined') {
           result.response = Object.prototype.toString.call(XMLReq.response);
         }
         break;

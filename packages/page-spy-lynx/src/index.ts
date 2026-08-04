@@ -1,33 +1,38 @@
-import { getAuthSecret, isArray, isClass, psLog } from "@huolala-tech/page-spy-base/dist/utils";
-import { Client } from "@huolala-tech/page-spy-base/dist/client";
+import {
+  getAuthSecret,
+  isArray,
+  isClass,
+  psLog,
+} from '@huolala-tech/page-spy-base/dist/utils';
+import { Client } from '@huolala-tech/page-spy-base/dist/client';
 import type {
   PageSpyPlugin,
   PageSpyPluginLifecycle,
   PluginOrder,
   PageSpyPluginLifecycleArgs,
-} from "@huolala-tech/page-spy-types";
+} from '@huolala-tech/page-spy-types';
 
-import ConsolePlugin from "./plugins/console";
-import ErrorPlugin from "./plugins/error";
-import NetworkPlugin from "./plugins/network";
-import SystemPlugin from "./plugins/system";
-import StoragePlugin from "./plugins/storage";
-import WebSocketPlugin from "./plugins/network/websocket";
-import { getLynxClientInfo, getLynxSystemInfo } from "./platform";
-import { getGlobal } from "./utils";
+import ConsolePlugin from './plugins/console';
+import ErrorPlugin from './plugins/error';
+import NetworkPlugin from './plugins/network';
+import SystemPlugin from './plugins/system';
+import StoragePlugin from './plugins/storage';
+import WebSocketPlugin from './plugins/network/websocket';
+import { getLynxClientInfo, getLynxSystemInfo } from './platform';
+import { getGlobal } from './utils';
 export {
   clearStorage,
   getStorageItem,
   removeStorageItem,
   setStorageItem,
   storage,
-} from "./plugins/storage";
+} from './plugins/storage';
 
-import socketStore from "./helpers/socket";
-import Request from "./api";
+import socketStore from './helpers/socket';
+import Request from './api';
 
 // eslint-disable-next-line import/order
-import { Config, InitConfig } from "./config";
+import { Config, InitConfig } from './config';
 
 type UpdateConfig = {
   title?: string;
@@ -40,7 +45,7 @@ type PageSpyRuntimeState = {
 };
 
 /** 将单例状态挂到全局对象，避免模块重复加载时产生多个 PageSpy 实例。 */
-const RUNTIME_STATE_KEY = "__PAGE_SPY_REACT_LYNX_STATE__";
+const RUNTIME_STATE_KEY = '__PAGE_SPY_REACT_LYNX_STATE__';
 
 /** 获取或初始化 PageSpy 在当前 Lynx 运行时中的单例状态。 */
 const getPageSpyRuntimeState = (): PageSpyRuntimeState => {
@@ -59,7 +64,7 @@ class PageSpy {
   version = PKG_VERSION;
 
   /** 按执行顺序分组的插件注册表。 */
-  static plugins: Record<PluginOrder | "normal", PageSpyPlugin[]> = {
+  static plugins: Record<PluginOrder | 'normal', PageSpyPlugin[]> = {
     pre: [],
     normal: [],
     post: [],
@@ -67,7 +72,11 @@ class PageSpy {
 
   /** 展开后的插件执行队列：pre -> normal -> post。 */
   static get pluginsWithOrder() {
-    return [...PageSpy.plugins.pre, ...PageSpy.plugins.normal, ...PageSpy.plugins.post];
+    return [
+      ...PageSpy.plugins.pre,
+      ...PageSpy.plugins.normal,
+      ...PageSpy.plugins.post,
+    ];
   }
 
   static client: Client;
@@ -76,13 +85,13 @@ class PageSpy {
   request: Request | null = null;
 
   // 系统信息展示名：<os>-<browser>:<browserVersion>
-  name = "";
+  name = '';
 
   // PageSpy 房间号
-  address = "";
+  address = '';
 
   // 完整的 WebSocket 房间连接地址
-  roomUrl = "";
+  roomUrl = '';
 
   socketStore = socketStore;
 
@@ -111,14 +120,20 @@ class PageSpy {
       return;
     }
     if (isClass(plugin)) {
-      psLog.error("PageSpy.registerPlugin() expect to pass an instance, not a class");
+      psLog.error(
+        'PageSpy.registerPlugin() expect to pass an instance, not a class',
+      );
       return;
     }
     if (!plugin.name) {
-      psLog.error(`The ${plugin.constructor.name} plugin should provide a "name" property`);
+      psLog.error(
+        `The ${plugin.constructor.name} plugin should provide a "name" property`,
+      );
       return;
     }
-    const isExist = PageSpy.pluginsWithOrder.some((i) => i.name === plugin.name);
+    const isExist = PageSpy.pluginsWithOrder.some(
+      (i) => i.name === plugin.name,
+    );
     if (isExist) {
       psLog.info(
         `The ${plugin.name} has registered. Consider the following reasons:
@@ -127,13 +142,13 @@ class PageSpy {
       );
       return;
     }
-    const currentPluginSet = PageSpy.plugins[plugin.enforce || "normal"];
+    const currentPluginSet = PageSpy.plugins[plugin.enforce || 'normal'];
     currentPluginSet.push(plugin);
   }
 
   constructor(init: InitConfig) {
     if (PageSpy.instance) {
-      psLog.warn("Cannot initialize PageSpy multiple times");
+      psLog.warn('Cannot initialize PageSpy multiple times');
       // eslint-disable-next-line no-constructor-return
       return PageSpy.instance;
     }
@@ -146,8 +161,10 @@ class PageSpy {
     this.updateConfiguration();
     PageSpy.instance = this;
 
-    PageSpy.client.plugins = PageSpy.pluginsWithOrder.map((plugin) => plugin.name);
-    this.triggerPlugins("onInit", {
+    PageSpy.client.plugins = PageSpy.pluginsWithOrder.map(
+      (plugin) => plugin.name,
+    );
+    this.triggerPlugins('onInit', {
       socketStore,
       config,
       client: PageSpy.client,
@@ -161,7 +178,7 @@ class PageSpy {
     const { messageCapacity, useSecret } = this.config.get();
     if (useSecret === true) {
       const secret = getAuthSecret();
-      this.config.set("secret", secret);
+      this.config.set('secret', secret);
       psLog.log(`Room Secret: ${secret}`);
     }
 
@@ -197,7 +214,7 @@ class PageSpy {
 
     state.initPromise = this.createNewConnection()
       .then(() => {
-        psLog.log("Plugins inited");
+        psLog.log('Plugins inited');
       })
       .catch((err) => {
         state.initPromise = null;
@@ -208,7 +225,7 @@ class PageSpy {
 
   /** 重置所有插件并关闭 WebSocket 连接。 */
   abort() {
-    this.triggerPlugins("onReset");
+    this.triggerPlugins('onReset');
     socketStore.close();
     PageSpy.instance = null;
   }
@@ -219,7 +236,7 @@ class PageSpy {
       return;
     }
     if (!this.request) {
-      psLog.error("Cannot get the Request");
+      psLog.error('Cannot get the Request');
       return;
     }
     const roomInfo = await this.request.createRoom();
@@ -235,10 +252,10 @@ class PageSpy {
 
     const { project, title } = obj;
     if (project) {
-      this.config.set("project", String(project));
+      this.config.set('project', String(project));
     }
     if (title) {
-      this.config.set("title", String(title));
+      this.config.set('title', String(title));
     }
 
     socketStore.updateRoomInfo();
@@ -247,7 +264,7 @@ class PageSpy {
   /** 获取可在浏览器中打开的 PageSpy 调试面板链接。 */
   getDebugLink() {
     const config = this.config.get();
-    let link = `${config.enableSSL === false ? "http://" : "https://"}${config.api}/#/devtools?address=${encodeURIComponent(
+    let link = `${config.enableSSL === false ? 'http://' : 'https://'}${config.api}/#/devtools?address=${encodeURIComponent(
       this.address,
     )}`;
     if (config.useSecret) {
@@ -261,7 +278,7 @@ class PageSpy {
     if (this.address) {
       return Promise.reject(`PageSpy 房间号：${this.address.slice(0, 4)}`);
     } else {
-      return Promise.reject("PageSpy 房间号不存在");
+      return Promise.reject('PageSpy 房间号不存在');
     }
   }
 }

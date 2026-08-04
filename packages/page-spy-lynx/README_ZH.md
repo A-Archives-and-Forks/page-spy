@@ -129,9 +129,7 @@ JavaScript 侧接口约定如下：
 ```ts
 declare let NativeModules: {
   PageSpyConsoleModule: {
-    drainMessages(
-      callback: (messages: string[]) => void,
-    ): void;
+    drainMessages(callback: (messages: string[]) => void): void;
   };
 };
 ```

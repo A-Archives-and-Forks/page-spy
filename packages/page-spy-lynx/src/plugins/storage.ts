@@ -1,8 +1,11 @@
-import { makeMessage } from "@huolala-tech/page-spy-base/dist/message";
-import type { PageSpyPlugin } from "@huolala-tech/page-spy-types";
-import type { OnInitParams, SpyBase } from "@huolala-tech/page-spy-types";
-import type { DataItem, GetTypeDataItem } from "@huolala-tech/page-spy-types/lib/storage";
-import { getGlobal } from "../utils";
+import { makeMessage } from '@huolala-tech/page-spy-base/dist/message';
+import type { PageSpyPlugin } from '@huolala-tech/page-spy-types';
+import type { OnInitParams, SpyBase } from '@huolala-tech/page-spy-types';
+import type {
+  DataItem,
+  GetTypeDataItem,
+} from '@huolala-tech/page-spy-types/lib/storage';
+import { getGlobal } from '../utils';
 
 /** 原生本地存储模块类型定义（Lynx NativeModules 中的 NativeLocalStorageModule） */
 type NativeLocalStorageModule = {
@@ -13,7 +16,10 @@ type NativeLocalStorageModule = {
   /** 获取所有存储项，通过回调返回值（可选） */
   getAllStorageItems?(
     callback: (
-      value: Record<string, string> | Array<{ name: string; value: string }> | string,
+      value:
+        | Record<string, string>
+        | Array<{ name: string; value: string }>
+        | string,
     ) => void,
   ): void;
   /** 删除指定存储项（可选，不支持时通过设置为空字符串替代） */
@@ -48,7 +54,7 @@ const memoryStorage = new Map<string, string>();
  */
 const warnStorageFallback = (action: string, error: unknown) => {
   const globalConsole = getGlobal().console;
-  if (typeof globalConsole?.warn === "function") {
+  if (typeof globalConsole?.warn === 'function') {
     globalConsole.warn(`[page-spy-react-lynx] storage ${action} failed`, error);
   }
 };
@@ -71,9 +77,9 @@ const getNativeStorage = (): NativeLocalStorageModule | null => {
   // 校验原生模块是否具备核心方法
   if (
     nativeModule &&
-    typeof nativeModule.setStorageItem === "function" &&
-    typeof nativeModule.getStorageItem === "function" &&
-    typeof nativeModule.clearStorage === "function"
+    typeof nativeModule.setStorageItem === 'function' &&
+    typeof nativeModule.getStorageItem === 'function' &&
+    typeof nativeModule.clearStorage === 'function'
   ) {
     return nativeModule;
   }
@@ -92,18 +98,20 @@ const getWebStorage = (): WebStorageLike | null => {
     // 尝试从全局对象或 globalThis 获取 localStorage
     webStorage =
       globalObject.localStorage ||
-      (typeof globalThis === "object" ? (globalThis as Record<string, any>).localStorage : null);
+      (typeof globalThis === 'object'
+        ? (globalThis as Record<string, any>).localStorage
+        : null);
   } catch (error) {
-    warnStorageFallback("detect", error);
+    warnStorageFallback('detect', error);
     return null;
   }
 
   // 校验 Web 存储是否具备核心方法
   if (
     webStorage &&
-    typeof webStorage.setItem === "function" &&
-    typeof webStorage.getItem === "function" &&
-    typeof webStorage.clear === "function"
+    typeof webStorage.setItem === 'function' &&
+    typeof webStorage.getItem === 'function' &&
+    typeof webStorage.clear === 'function'
   ) {
     return webStorage;
   }
@@ -142,7 +150,7 @@ export const getStorageItem = async (key: string): Promise<string | null> => {
         });
       });
     } catch (error) {
-      warnStorageFallback("get", error);
+      warnStorageFallback('get', error);
       // 原生存储失败，降级到内存存储
       return getMemoryStorageItem(key);
     }
@@ -154,7 +162,7 @@ export const getStorageItem = async (key: string): Promise<string | null> => {
     try {
       return normalizeStorageValue(webStorage.getItem(key));
     } catch (error) {
-      warnStorageFallback("get", error);
+      warnStorageFallback('get', error);
       // Web 存储失败，降级到内存存储
       return getMemoryStorageItem(key);
     }
@@ -179,7 +187,7 @@ export const setStorageItem = (key: string, value: string): void => {
       memoryStorage.set(key, value);
       return;
     } catch (error) {
-      warnStorageFallback("set", error);
+      warnStorageFallback('set', error);
       // 原生存储失败，降级到内存存储
       memoryStorage.set(key, value);
       return;
@@ -194,7 +202,7 @@ export const setStorageItem = (key: string, value: string): void => {
       memoryStorage.set(key, value);
       return;
     } catch (error) {
-      warnStorageFallback("set", error);
+      warnStorageFallback('set', error);
       // Web 存储失败，降级到内存存储
       memoryStorage.set(key, value);
       return;
@@ -218,7 +226,7 @@ export const clearStorage = (): void => {
       memoryStorage.clear();
       return;
     } catch (error) {
-      warnStorageFallback("clear", error);
+      warnStorageFallback('clear', error);
       memoryStorage.clear();
       return;
     }
@@ -232,7 +240,7 @@ export const clearStorage = (): void => {
       memoryStorage.clear();
       return;
     } catch (error) {
-      warnStorageFallback("clear", error);
+      warnStorageFallback('clear', error);
       memoryStorage.clear();
       return;
     }
@@ -252,16 +260,16 @@ export const removeStorageItem = (key: string): void => {
   const nativeStorage = getNativeStorage();
   if (nativeStorage) {
     try {
-      if (typeof nativeStorage.removeStorageItem === "function") {
+      if (typeof nativeStorage.removeStorageItem === 'function') {
         nativeStorage.removeStorageItem(key);
       } else {
         // 不支持 removeStorageItem 时，通过设置为空字符串模拟删除
-        nativeStorage.setStorageItem(key, "");
+        nativeStorage.setStorageItem(key, '');
       }
       memoryStorage.delete(key);
       return;
     } catch (error) {
-      warnStorageFallback("remove", error);
+      warnStorageFallback('remove', error);
       memoryStorage.delete(key);
       return;
     }
@@ -271,16 +279,16 @@ export const removeStorageItem = (key: string): void => {
   const webStorage = getWebStorage();
   if (webStorage) {
     try {
-      if (typeof webStorage.removeItem === "function") {
+      if (typeof webStorage.removeItem === 'function') {
         webStorage.removeItem(key);
       } else {
         // 不支持 removeItem 时，通过设置为空字符串模拟删除
-        webStorage.setItem(key, "");
+        webStorage.setItem(key, '');
       }
       memoryStorage.delete(key);
       return;
     } catch (error) {
-      warnStorageFallback("remove", error);
+      warnStorageFallback('remove', error);
       memoryStorage.delete(key);
       return;
     }
@@ -296,13 +304,13 @@ export const removeStorageItem = (key: string): void => {
  * @returns 键名，无法提取时返回空字符串
  */
 const getStorageKey = (data: DataItem) => {
-  if ("name" in data && data.name) {
+  if ('name' in data && data.name) {
     return data.name;
   }
-  if ("data" in data && data.data[0]?.name) {
+  if ('data' in data && data.data[0]?.name) {
     return data.data[0].name;
   }
-  return "";
+  return '';
 };
 
 /**
@@ -312,14 +320,17 @@ const getStorageKey = (data: DataItem) => {
  * @returns 规范化后的存储项数组
  */
 const normalizeStorageEntries = (
-  value: Record<string, string> | Array<{ name: string; value: string }> | string,
+  value:
+    | Record<string, string>
+    | Array<{ name: string; value: string }>
+    | string,
 ) => {
   // 如果是字符串，先尝试 JSON 解析后递归处理
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     try {
       return normalizeStorageEntries(JSON.parse(value));
     } catch (error) {
-      warnStorageFallback("list", error);
+      warnStorageFallback('list', error);
       return [];
     }
   }
@@ -349,21 +360,27 @@ const normalizeStorageEntries = (
 const getAllStorageValues = async () => {
   // 优先尝试原生存储
   const nativeStorage = getNativeStorage();
-  if (nativeStorage && typeof nativeStorage.getAllStorageItems === "function") {
+  if (nativeStorage && typeof nativeStorage.getAllStorageItems === 'function') {
     try {
-      return await new Promise<Array<{ name: string; value: string }>>((resolve) => {
-        nativeStorage.getAllStorageItems!((value) => {
-          resolve(normalizeStorageEntries(value));
-        });
-      });
+      return await new Promise<Array<{ name: string; value: string }>>(
+        (resolve) => {
+          nativeStorage.getAllStorageItems!((value) => {
+            resolve(normalizeStorageEntries(value));
+          });
+        },
+      );
     } catch (error) {
-      warnStorageFallback("list", error);
+      warnStorageFallback('list', error);
     }
   }
 
   // 其次尝试 Web 存储
   const webStorage = getWebStorage();
-  if (webStorage && typeof webStorage.key === "function" && typeof webStorage.length === "number") {
+  if (
+    webStorage &&
+    typeof webStorage.key === 'function' &&
+    typeof webStorage.length === 'number'
+  ) {
     try {
       const entries: Array<{ name: string; value: string }> = [];
       for (let i = 0; i < webStorage.length; i += 1) {
@@ -376,7 +393,7 @@ const getAllStorageValues = async () => {
       }
       return entries;
     } catch (error) {
-      warnStorageFallback("list", error);
+      warnStorageFallback('list', error);
     }
   }
 
@@ -427,7 +444,7 @@ export const storage = {
  */
 export default class StoragePlugin implements PageSpyPlugin {
   /** 插件名称 */
-  public name = "StoragePlugin";
+  public name = 'StoragePlugin';
 
   /** 标记插件是否已初始化，防止重复初始化 */
   public static hasInitd = false;
@@ -436,7 +453,7 @@ export default class StoragePlugin implements PageSpyPlugin {
   public storage = storage;
 
   /** WebSocket 连接存储实例，用于监听和响应远程指令 */
-  private socketStore: OnInitParams<any>["socketStore"] | null = null;
+  private socketStore: OnInitParams<any>['socketStore'] | null = null;
 
   /**
    * 处理远程存储操作事件
@@ -451,35 +468,35 @@ export default class StoragePlugin implements PageSpyPlugin {
     const data = event.source.data;
 
     // 设置存储项
-    if (data.action === "set") {
+    if (data.action === 'set') {
       setStorageItem(data.name, data.value);
-      reply(makeMessage("storage", data));
+      reply(makeMessage('storage', data));
       return;
     }
 
     // 删除存储项
-    if (data.action === "remove") {
+    if (data.action === 'remove') {
       removeStorageItem(data.name);
-      reply(makeMessage("storage", data));
+      reply(makeMessage('storage', data));
       return;
     }
 
     // 清空所有存储项
-    if (data.action === "clear") {
+    if (data.action === 'clear') {
       clearStorage();
-      reply(makeMessage("storage", data));
+      reply(makeMessage('storage', data));
       return;
     }
 
     // 获取存储项
-    if (data.action === "get") {
+    if (data.action === 'get') {
       const values = await getStorageValues(data);
       const response: GetTypeDataItem = {
         type: data.type,
-        action: "get",
+        action: 'get',
         data: values,
       };
-      reply(makeMessage("storage", response));
+      reply(makeMessage('storage', response));
     }
   };
 
@@ -492,7 +509,7 @@ export default class StoragePlugin implements PageSpyPlugin {
     if (StoragePlugin.hasInitd) return;
     StoragePlugin.hasInitd = true;
     this.socketStore = socketStore;
-    (socketStore.addListener as any)("storage", this.onStorage);
+    (socketStore.addListener as any)('storage', this.onStorage);
   }
 
   /**
@@ -500,7 +517,7 @@ export default class StoragePlugin implements PageSpyPlugin {
    * 移除 WebSocket 监听器，清理状态
    */
   public onReset() {
-    (this.socketStore?.removeListener as any)?.("storage", this.onStorage);
+    (this.socketStore?.removeListener as any)?.('storage', this.onStorage);
     this.socketStore = null;
     StoragePlugin.hasInitd = false;
   }

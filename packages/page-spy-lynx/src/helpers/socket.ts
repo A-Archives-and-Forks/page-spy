@@ -3,15 +3,15 @@ import {
   SocketState,
   SocketWrapper,
   WebSocketEvents,
-} from "@huolala-tech/page-spy-base/dist/socket-base";
-import { stringifyData } from "@huolala-tech/page-spy-base/dist/utils";
-import { getGlobal } from "../utils";
+} from '@huolala-tech/page-spy-base/dist/socket-base';
+import { stringifyData } from '@huolala-tech/page-spy-base/dist/utils';
+import { getGlobal } from '../utils';
 
 type NativeWebSocketEvent =
-  | { type: "open"; socketId: string }
-  | { type: "message"; socketId: string; data: string }
-  | { type: "close"; socketId: string; code?: number; reason?: string }
-  | { type: "error"; socketId: string; message?: string };
+  | { type: 'open'; socketId: string }
+  | { type: 'message'; socketId: string; data: string }
+  | { type: 'close'; socketId: string; code?: number; reason?: string }
+  | { type: 'error'; socketId: string; message?: string };
 
 type NativeWebSocketDrainPayload =
   | NativeWebSocketEvent[]
@@ -35,9 +35,9 @@ type LynxNativeWebSocketModule = {
 };
 
 /** 宿主侧需要注册的 Lynx 原生 WebSocket 模块名。 */
-const NATIVE_MODULE_NAME = "LynxNativeWebSocketModule";
+const NATIVE_MODULE_NAME = 'LynxNativeWebSocketModule';
 const MISSING_NATIVE_MODULE_ERROR =
-  "NativeModules.LynxNativeWebSocketModule or constructable globalThis.WebSocket is required for PageSpy websocket in Lynx runtime";
+  'NativeModules.LynxNativeWebSocketModule or constructable globalThis.WebSocket is required for PageSpy websocket in Lynx runtime';
 
 let socketIdSeed = 0;
 
@@ -52,10 +52,10 @@ const getNativeWebSocketModule = (): LynxNativeWebSocketModule | null => {
   const nativeModule = getGlobal().NativeModules?.[NATIVE_MODULE_NAME];
   if (
     nativeModule &&
-    typeof nativeModule.connect === "function" &&
-    typeof nativeModule.send === "function" &&
-    typeof nativeModule.close === "function" &&
-    typeof nativeModule.drainEvents === "function"
+    typeof nativeModule.connect === 'function' &&
+    typeof nativeModule.send === 'function' &&
+    typeof nativeModule.close === 'function' &&
+    typeof nativeModule.drainEvents === 'function'
   ) {
     return nativeModule;
   }
@@ -73,7 +73,7 @@ const assertNativeWebSocketModule = () => {
 
 /** 判断 WebSocket 构造器是否可被 new，用于兼容非标准运行时对象。 */
 const isConstructableWebSocket = (WebSocketCtor: any) => {
-  if (typeof WebSocketCtor !== "function") {
+  if (typeof WebSocketCtor !== 'function') {
     return false;
   }
   try {
@@ -105,19 +105,21 @@ const ANDROID_TERMINAL_CONFIRM_DELAY = 300;
 const isAndroidRuntime = () => {
   const globalObject = getGlobal();
   const platform = String(
-    globalObject.SystemInfo?.platform || globalObject.lynx?.__globalProps?.platform || "",
+    globalObject.SystemInfo?.platform ||
+      globalObject.lynx?.__globalProps?.platform ||
+      '',
   ).toLowerCase();
 
-  return platform.includes("android");
+  return platform.includes('android');
 };
 
 /** 校验原生侧返回的数据是否为 WebSocket 事件。 */
 const isNativeWebSocketEvent = (value: any): value is NativeWebSocketEvent => {
   return (
     value &&
-    typeof value === "object" &&
-    typeof value.type === "string" &&
-    typeof value.socketId === "string"
+    typeof value === 'object' &&
+    typeof value.type === 'string' &&
+    typeof value.socketId === 'string'
   );
 };
 
@@ -128,7 +130,7 @@ const normalizeNativeEvents = (
 ) => {
   const allPayloads = [payload, ...extraPayloads];
   return allPayloads.reduce<NativeWebSocketEvent[]>((events, item) => {
-    if (typeof item === "string") {
+    if (typeof item === 'string') {
       try {
         events.push(...normalizeNativeEvents(JSON.parse(item)));
       } catch (e) {
@@ -142,7 +144,7 @@ const normalizeNativeEvents = (
       return events;
     }
 
-    if (item && typeof item === "object" && "events" in item) {
+    if (item && typeof item === 'object' && 'events' in item) {
       const wrappedEvents = item.events;
       if (Array.isArray(wrappedEvents)) {
         events.push(...wrappedEvents.filter(isNativeWebSocketEvent));
@@ -169,7 +171,8 @@ export class LynxWebSocketWrapper extends SocketWrapper {
 
   private nativeEventPollTimer: ReturnType<typeof setTimeout> | null = null;
 
-  private nativeTerminalConfirmTimer: ReturnType<typeof setTimeout> | null = null;
+  private nativeTerminalConfirmTimer: ReturnType<typeof setTimeout> | null =
+    null;
 
   private nativeOpenedAt = 0;
 
@@ -236,13 +239,13 @@ export class LynxWebSocketWrapper extends SocketWrapper {
     this.socketId = null;
     this.readyState = SocketState.CONNECTING;
     this.socketInstance = new WebSocketCtor(url);
-    const eventNames: WebSocketEvents[] = ["open", "close", "error", "message"];
+    const eventNames: WebSocketEvents[] = ['open', 'close', 'error', 'message'];
     eventNames.forEach((eventName) => {
       // 将标准 WebSocket 事件转发到 SocketWrapper 的事件队列。
       this.socketInstance!.addEventListener(eventName, (data) => {
-        if (eventName === "open") {
+        if (eventName === 'open') {
           this.readyState = SocketState.OPEN;
-        } else if (eventName === "close" || eventName === "error") {
+        } else if (eventName === 'close' || eventName === 'error') {
           this.readyState = SocketState.CLOSED;
         }
         this.events[eventName].forEach((cb) => {
@@ -260,20 +263,26 @@ export class LynxWebSocketWrapper extends SocketWrapper {
       if (!this.socketId || this.socketInstance) return;
 
       const socketId = this.socketId;
-      assertNativeWebSocketModule().drainEvents(socketId, (payload, ...rest) => {
-        const events = normalizeNativeEvents(payload, rest);
-        events.forEach((event) => {
-          this.handleNativeEvent(event);
-        });
+      assertNativeWebSocketModule().drainEvents(
+        socketId,
+        (payload, ...rest) => {
+          const events = normalizeNativeEvents(payload, rest);
+          events.forEach((event) => {
+            this.handleNativeEvent(event);
+          });
 
-        if (this.socketId === socketId && this.readyState !== SocketState.CLOSED) {
-          const interval =
-            this.readyState === SocketState.OPEN
-              ? NATIVE_EVENT_OPEN_POLL_INTERVAL
-              : NATIVE_EVENT_CONNECTING_POLL_INTERVAL;
-          this.nativeEventPollTimer = setTimeout(poll, interval);
-        }
-      });
+          if (
+            this.socketId === socketId &&
+            this.readyState !== SocketState.CLOSED
+          ) {
+            const interval =
+              this.readyState === SocketState.OPEN
+                ? NATIVE_EVENT_OPEN_POLL_INTERVAL
+                : NATIVE_EVENT_CONNECTING_POLL_INTERVAL;
+            this.nativeEventPollTimer = setTimeout(poll, interval);
+          }
+        },
+      );
     };
 
     poll();
@@ -299,21 +308,21 @@ export class LynxWebSocketWrapper extends SocketWrapper {
   private handleNativeEvent(event: NativeWebSocketEvent) {
     if (!this.socketId || event.socketId !== this.socketId) return;
 
-    if (event.type === "open") {
+    if (event.type === 'open') {
       this.clearNativeTerminalConfirm();
       this.nativeOpenedAt = Date.now();
       this.readyState = SocketState.OPEN;
-      this.emit("open", {});
+      this.emit('open', {});
       return;
     }
 
-    if (event.type === "message") {
+    if (event.type === 'message') {
       this.clearNativeTerminalConfirm();
-      this.emit("message", { data: event.data });
+      this.emit('message', { data: event.data });
       return;
     }
 
-    if (event.type === "close") {
+    if (event.type === 'close') {
       this.handleNativeTerminalEvent(event);
       return;
     }
@@ -323,12 +332,12 @@ export class LynxWebSocketWrapper extends SocketWrapper {
 
   /** Android 刚 open 后可能立即上报误判终止事件，这里延迟确认一次。 */
   private handleNativeTerminalEvent(
-    event: Extract<NativeWebSocketEvent, { type: "close" | "error" }>,
+    event: Extract<NativeWebSocketEvent, { type: 'close' | 'error' }>,
   ) {
     if (
       isAndroidRuntime() &&
       this.readyState === SocketState.OPEN &&
-      (event.type === "error" || event.code == null || event.code === 1000) &&
+      (event.type === 'error' || event.code == null || event.code === 1000) &&
       Date.now() - this.nativeOpenedAt < ANDROID_OPEN_TERMINAL_GRACE_PERIOD
     ) {
       this.clearNativeTerminalConfirm();
@@ -343,16 +352,16 @@ export class LynxWebSocketWrapper extends SocketWrapper {
 
   /** 真正应用 close/error 终止事件并释放原生连接状态。 */
   private applyNativeTerminalEvent(
-    event: Extract<NativeWebSocketEvent, { type: "close" | "error" }>,
+    event: Extract<NativeWebSocketEvent, { type: 'close' | 'error' }>,
   ) {
     this.readyState = SocketState.CLOSED;
-    if (event.type === "close") {
-      this.emit("close", {
+    if (event.type === 'close') {
+      this.emit('close', {
         code: event.code ?? 1000,
-        reason: event.reason || "",
+        reason: event.reason || '',
       });
     } else {
-      this.emit("error", event.message || "Native websocket error");
+      this.emit('error', event.message || 'Native websocket error');
     }
     this.clearNativeEventPolling();
     this.clearNativeTerminalConfirm();

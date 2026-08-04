@@ -1,5 +1,5 @@
-import type { SpyClient } from "@huolala-tech/page-spy-types";
-import { getGlobal } from "./utils";
+import type { SpyClient } from '@huolala-tech/page-spy-types';
+import { getGlobal } from './utils';
 
 type LynxGlobal = {
   __globalProps?: Record<string, any>;
@@ -16,8 +16,15 @@ type LynxSystemInfo = {
   pixelHeight?: number;
   pixelWidth?: number;
   pixelRatio?: number;
-  platform?: "Android" | "iOS" | "macOS" | "windows" | "headless" | "web" | string;
-  runtimeType?: "v8" | "jsc" | "quickjs" | string;
+  platform?:
+    | 'Android'
+    | 'iOS'
+    | 'macOS'
+    | 'windows'
+    | 'headless'
+    | 'web'
+    | string;
+  runtimeType?: 'v8' | 'jsc' | 'quickjs' | string;
   [key: string]: any;
 };
 
@@ -45,7 +52,7 @@ const getNativeModules = () => {
 /** 优先读取 Lynx 注入的 SystemInfo 全局变量，失败时回退到统一全局对象。 */
 const getSystemInfoGlobal = () => {
   try {
-    if (typeof SystemInfo !== "undefined") return SystemInfo;
+    if (typeof SystemInfo !== 'undefined') return SystemInfo;
   } catch {
     // ignored
   }
@@ -54,22 +61,22 @@ const getSystemInfoGlobal = () => {
 
 /** 从多个候选值中选出第一个有效字符串，避免上报空字段。 */
 const pickString = (...values: any[]) => {
-  const value = values.find((item) => typeof item === "string" && item);
-  return value || "unknown";
+  const value = values.find((item) => typeof item === 'string' && item);
+  return value || 'unknown';
 };
 
 /** 将不同平台返回的系统名称归一化为 PageSpy 识别的 OS 枚举。 */
 const normalizeOS = (value: any): SpyClient.OS => {
-  const text = String(value || "").toLowerCase();
-  if (text.includes("android")) return "android";
-  if (text.includes("ios") || text.includes("iphone")) return "ios";
-  if (text.includes("ipad")) return "ipad";
-  if (text.includes("mac")) return "mac";
-  if (text.includes("web")) return "web" as SpyClient.OS;
-  if (text.includes("windows") || text.includes("win")) return "windows";
-  if (text.includes("linux")) return "linux";
-  if (text.includes("harmony")) return "harmony";
-  return "unknown";
+  const text = String(value || '').toLowerCase();
+  if (text.includes('android')) return 'android';
+  if (text.includes('ios') || text.includes('iphone')) return 'ios';
+  if (text.includes('ipad')) return 'ipad';
+  if (text.includes('mac')) return 'mac';
+  if (text.includes('web')) return 'web' as SpyClient.OS;
+  if (text.includes('windows') || text.includes('win')) return 'windows';
+  if (text.includes('linux')) return 'linux';
+  if (text.includes('harmony')) return 'harmony';
+  return 'unknown';
 };
 
 /** 汇总 Lynx 全局属性和系统 API 信息，作为客户端识别的原始数据。 */
@@ -102,7 +109,11 @@ export const getLynxSystemInfo = () => {
 export const getLynxClientInfo = (): SpyClient.ClientInfo => {
   const rawInfo = getLynxSystemInfo();
   const osSource =
-    rawInfo.osType || rawInfo.platform || rawInfo.os || rawInfo.system || rawInfo.devicePlatform;
+    rawInfo.osType ||
+    rawInfo.platform ||
+    rawInfo.os ||
+    rawInfo.system ||
+    rawInfo.devicePlatform;
   return {
     osType: normalizeOS(osSource),
     osVersion: pickString(
@@ -111,15 +122,15 @@ export const getLynxClientInfo = (): SpyClient.ClientInfo => {
       rawInfo.system,
       rawInfo.version,
     ),
-    browserType: "lynx" as SpyClient.Browser,
+    browserType: 'lynx' as SpyClient.Browser,
     browserVersion: pickString(
       rawInfo.lynxVersion,
       rawInfo.engineVersion,
       rawInfo.lynxSdkVersion,
       rawInfo.sdkVersion,
     ),
-    framework: "react-lynx" as SpyClient.Framework,
-    sdk: "react-lynx" as SpyClient.SDKType,
+    framework: 'react-lynx' as SpyClient.Framework,
+    sdk: 'react-lynx' as SpyClient.SDKType,
     sdkVersion: PKG_VERSION,
   };
 };

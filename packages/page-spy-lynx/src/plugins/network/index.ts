@@ -1,22 +1,25 @@
 // eslint-disable no-case-declarations
-import type { OnInitParams, PageSpyPlugin } from "@huolala-tech/page-spy-types";
-import { NetworkProxyBase } from "@huolala-tech/page-spy-base/dist/network/base";
-import XhrProxy from "./proxy/xhr-proxy";
-import FetchProxy from "./proxy/fetch-proxy";
-import { InitConfig } from "../../config";
-import { getGlobal } from "../../utils";
+import type { OnInitParams, PageSpyPlugin } from '@huolala-tech/page-spy-types';
+import { NetworkProxyBase } from '@huolala-tech/page-spy-base/dist/network/base';
+import XhrProxy from './proxy/xhr-proxy';
+import FetchProxy from './proxy/fetch-proxy';
+import { InitConfig } from '../../config';
+import { getGlobal } from '../../utils';
 
 /** 判断当前 Lynx 运行时是否有 fetch 或 lynx.fetch 能力。 */
 const hasFetchCapability = () => {
   const globalObject = getGlobal();
-  return typeof globalObject.fetch === "function" || typeof globalObject.lynx?.fetch === "function";
+  return (
+    typeof globalObject.fetch === 'function' ||
+    typeof globalObject.lynx?.fetch === 'function'
+  );
 };
 
 /** 判断当前 Lynx 运行时是否有可代理的 XMLHttpRequest 能力。 */
 const hasXhrCapability = () => {
   const XHR = getGlobal().XMLHttpRequest as typeof XMLHttpRequest | undefined;
   return (
-    typeof XHR === "function" &&
+    typeof XHR === 'function' &&
     !!XHR.prototype?.open &&
     !!XHR.prototype?.send &&
     !!XHR.prototype?.setRequestHeader
@@ -26,7 +29,7 @@ const hasXhrCapability = () => {
 /** Network 插件：根据运行时能力安装 fetch/XHR 代理并上报请求流水。 */
 export default class NetworkPlugin implements PageSpyPlugin {
   /** 插件名称。 */
-  public name = "NetworkPlugin";
+  public name = 'NetworkPlugin';
 
   /** XHR 代理实例；运行时不支持 XHR 时为空。 */
   public xhrProxy: XhrProxy | null = null;
