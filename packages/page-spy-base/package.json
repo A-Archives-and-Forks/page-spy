@@ -1,9 +1,9 @@
 {
   "name": "@huolala-tech/page-spy-base",
-  "version": "2.2.5",
+  "version": "2.2.6",
   "description": "The common utils of PageSpy.",
   "dependencies": {
-    "@huolala-tech/page-spy-types": "^2.2.5",
+    "@huolala-tech/page-spy-types": "^2.2.6",
     "zod": "^3.24.2"
   },
   "license": "MIT",
