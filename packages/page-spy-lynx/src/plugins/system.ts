@@ -1,5 +1,5 @@
 import { type Client } from '@huolala-tech/page-spy-base';
-import { makeMessage } from '@huolala-tech/page-spy-base/dist/message';
+import { makeMessage } from '@huolala-tech/page-spy-base';
 import type {
   SpySystem,
   PageSpyPlugin,

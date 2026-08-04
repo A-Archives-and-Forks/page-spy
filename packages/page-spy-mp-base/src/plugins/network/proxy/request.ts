@@ -3,11 +3,9 @@ import {
   isPlainObject,
   psLog,
   toStringTag,
-} from '@huolala-tech/page-spy-base/dist/utils';
-import {
   ReqReadyState,
   toLowerKeys,
-} from '@huolala-tech/page-spy-base/dist/network/common';
+} from '@huolala-tech/page-spy-base';
 import type { Client } from '@huolala-tech/page-spy-base';
 import MPNetworkProxyBase from './base';
 import { MPNetworkAPI } from '../../../types';

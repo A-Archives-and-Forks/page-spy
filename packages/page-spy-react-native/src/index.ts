@@ -3,8 +3,8 @@ import {
   isArray,
   isClass,
   psLog,
-} from '@huolala-tech/page-spy-base/dist/utils';
-import { Client } from '@huolala-tech/page-spy-base/dist/client';
+  Client,
+} from '@huolala-tech/page-spy-base';
 import type {
   PageSpyPlugin,
   PageSpyPluginLifecycle,

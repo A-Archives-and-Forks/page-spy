@@ -2,7 +2,7 @@ import {
   ConfigBase,
   extendConfigSchema,
   SchemaUnwrap,
-} from '@huolala-tech/page-spy-base/dist/config';
+} from '@huolala-tech/page-spy-base';
 
 const schema = extendConfigSchema((z) => {
   return z

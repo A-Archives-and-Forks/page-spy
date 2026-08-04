@@ -1,5 +1,5 @@
-import { RequestItem } from '@huolala-tech/page-spy-base/dist/request-item';
 import {
+  RequestItem,
   blob2base64Async,
   toStringTag,
   isArrayBuffer,
@@ -7,11 +7,9 @@ import {
   getRandomId,
   isString,
   psLog,
-} from '@huolala-tech/page-spy-base/dist/utils';
-import {
   Reason,
   MAX_SIZE,
-} from '@huolala-tech/page-spy-base/dist/network/common';
+} from '@huolala-tech/page-spy-base';
 import LynxNetworkProxyBase from './base';
 import { addContentTypeHeader, getFormattedBody } from '../common';
 import { getGlobal } from '../../../utils';

@@ -15,11 +15,11 @@ export const saveData = async ({ url, data }: UploadArgs) => {
       method: 'POST',
       success: (res: any) => {
         if (res.statusCode === 200) {
-          const data = res.data;
-          if (data.success) {
-            resolve(data);
+          const { data: resData } = res;
+          if (resData.success) {
+            resolve(resData);
           } else {
-            reject(data);
+            reject(resData);
           }
         }
       },

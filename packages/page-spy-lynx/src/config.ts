@@ -2,7 +2,7 @@ import {
   ConfigBase,
   extendConfigSchema,
   InitConfigBase,
-} from '@huolala-tech/page-spy-base/dist/config';
+} from '@huolala-tech/page-spy-base';
 
 /** Lynx 侧目前复用 PageSpy 基础配置，预留扩展 schema 入口。 */
 const schema: any = extendConfigSchema((z) => {

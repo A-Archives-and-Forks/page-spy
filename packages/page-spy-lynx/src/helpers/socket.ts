@@ -3,8 +3,8 @@ import {
   SocketState,
   SocketWrapper,
   WebSocketEvents,
-} from '@huolala-tech/page-spy-base/dist/socket-base';
-import { stringifyData } from '@huolala-tech/page-spy-base/dist/utils';
+  stringifyData,
+} from '@huolala-tech/page-spy-base';
 import { getGlobal } from '../utils';
 
 type NativeWebSocketEvent =
@@ -262,7 +262,7 @@ export class LynxWebSocketWrapper extends SocketWrapper {
     const poll = () => {
       if (!this.socketId || this.socketInstance) return;
 
-      const socketId = this.socketId;
+      const { socketId } = this;
       assertNativeWebSocketModule().drainEvents(
         socketId,
         (payload, ...rest) => {

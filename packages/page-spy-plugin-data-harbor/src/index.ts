@@ -6,7 +6,7 @@ import type {
   PluginOrder,
   OnMountedParams,
 } from '@huolala-tech/page-spy-types';
-import { psLog, removeEndSlash } from '@huolala-tech/page-spy-base/dist/utils';
+import { psLog, removeEndSlash } from '@huolala-tech/page-spy-base';
 import type { SocketStoreBase, RequestItem } from '@huolala-tech/page-spy-base';
 import type { InitConfig } from '@huolala-tech/page-spy-browser/dist/types/config';
 import {

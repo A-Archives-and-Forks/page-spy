@@ -3,8 +3,8 @@ import {
   isArray,
   isClass,
   psLog,
-} from '@huolala-tech/page-spy-base/dist/utils';
-import { Client } from '@huolala-tech/page-spy-base/dist/client';
+  Client,
+} from '@huolala-tech/page-spy-base';
 import type {
   PageSpyPlugin,
   PageSpyPluginLifecycle,
@@ -20,6 +20,13 @@ import StoragePlugin from './plugins/storage';
 import WebSocketPlugin from './plugins/network/websocket';
 import { getLynxClientInfo, getLynxSystemInfo } from './platform';
 import { getGlobal } from './utils';
+
+import socketStore from './helpers/socket';
+import Request from './api';
+
+// eslint-disable-next-line import/order
+import { Config, InitConfig } from './config';
+
 export {
   clearStorage,
   getStorageItem,
@@ -27,12 +34,6 @@ export {
   setStorageItem,
   storage,
 } from './plugins/storage';
-
-import socketStore from './helpers/socket';
-import Request from './api';
-
-// eslint-disable-next-line import/order
-import { Config, InitConfig } from './config';
 
 type UpdateConfig = {
   title?: string;
@@ -276,10 +277,11 @@ class PageSpy {
   /** Lynx 场景暂无内置面板，返回房间号供宿主侧展示。 */
   async showPanel() {
     if (this.address) {
-      return Promise.reject(`PageSpy 房间号：${this.address.slice(0, 4)}`);
-    } else {
-      return Promise.reject('PageSpy 房间号不存在');
+      return Promise.reject(
+        new Error(`PageSpy 房间号：${this.address.slice(0, 4)}`),
+      );
     }
+    return Promise.reject(new Error('PageSpy 房间号不存在'));
   }
 }
 

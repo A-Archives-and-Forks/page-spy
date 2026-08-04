@@ -1,6 +1,9 @@
-import { makeMessage } from '@huolala-tech/page-spy-base/dist/message';
-import type { PageSpyPlugin } from '@huolala-tech/page-spy-types';
-import type { OnInitParams, SpyBase } from '@huolala-tech/page-spy-types';
+import { makeMessage } from '@huolala-tech/page-spy-base';
+import type {
+  PageSpyPlugin,
+  OnInitParams,
+  SpyBase,
+} from '@huolala-tech/page-spy-types';
 import type {
   DataItem,
   GetTypeDataItem,
@@ -324,7 +327,7 @@ const normalizeStorageEntries = (
     | Record<string, string>
     | Array<{ name: string; value: string }>
     | string,
-) => {
+): Array<{ name: string; value: string }> => {
   // 如果是字符串，先尝试 JSON 解析后递归处理
   if (typeof value === 'string') {
     try {
@@ -339,16 +342,16 @@ const normalizeStorageEntries = (
   if (Array.isArray(value)) {
     return value
       .filter((item) => item && item.name)
-      .map(({ name, value }) => ({
+      .map(({ name, value: val }) => ({
         name,
-        value: String(value),
+        value: String(val),
       }));
   }
 
   // 如果是对象，转换为 { name, value } 数组
-  return Object.entries(value || {}).map(([name, value]) => ({
+  return Object.entries(value || {}).map(([name, val]) => ({
     name,
-    value: String(value),
+    value: String(val),
   }));
 };
 
@@ -465,7 +468,7 @@ export default class StoragePlugin implements PageSpyPlugin {
     event: SpyBase.InteractiveEvent<DataItem>,
     reply: (data: unknown) => void,
   ) => {
-    const data = event.source.data;
+    const { data } = event.source;
 
     // 设置存储项
     if (data.action === 'set') {

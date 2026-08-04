@@ -3,6 +3,7 @@ module.exports = {
   parserOptions: {
     project: './tsconfig.json',
   },
+  ignorePatterns: ['packages/page-spy-harmony'],
   rules: {
     'operator-linebreak': 'off',
     'object-curly-newline': 'off',
@@ -35,5 +36,6 @@ module.exports = {
     'prefer-exponentiation-operator': 'off',
     'implicit-arrow-linebreak': 'off',
     'function-paren-newline': 'off',
+    'no-continue': 'off',
   },
 };

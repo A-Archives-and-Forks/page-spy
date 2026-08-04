@@ -4,8 +4,8 @@ import {
   isString,
   isTypedArray,
   toStringTag,
-} from '@huolala-tech/page-spy-base/dist/utils';
-import { formatEntries } from '@huolala-tech/page-spy-base/dist/network/common';
+  formatEntries,
+} from '@huolala-tech/page-spy-base';
 import { SpyNetwork } from '@huolala-tech/page-spy-types';
 
 export async function getFormattedBody(body?: Document | BodyInit | null) {

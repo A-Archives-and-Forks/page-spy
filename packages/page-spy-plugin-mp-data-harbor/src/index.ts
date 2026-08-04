@@ -4,14 +4,13 @@ import type {
   PageSpyPlugin,
   PluginOrder,
 } from '@huolala-tech/page-spy-types';
-import { removeEndSlash } from '@huolala-tech/page-spy-base/dist/utils';
+import { removeEndSlash, InitConfigBase } from '@huolala-tech/page-spy-base';
 import {
   type Client,
   type SocketStoreBase,
   psLog,
   type MPPluginInitParams,
 } from '@huolala-tech/page-spy-mp-base';
-import { InitConfigBase } from '@huolala-tech/page-spy-base';
 import { MemoryHarbor } from './harbor/memoryHarbor';
 import { saveData } from './utils/upload';
 import {

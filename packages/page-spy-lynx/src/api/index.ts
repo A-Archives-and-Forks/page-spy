@@ -1,5 +1,5 @@
 import type { Client } from '@huolala-tech/page-spy-base';
-import { getRandomId } from '@huolala-tech/page-spy-base/dist/utils';
+import { getRandomId, isURL } from '@huolala-tech/page-spy-base';
 import { Config, InitConfig } from '../config';
 import { getGlobal, joinQuery } from '../utils';
 
@@ -77,8 +77,7 @@ const headersToRecord = (headers?: HeadersInit): Record<string, string> => {
 /** 从 fetch 入参中提取 URL 字符串，兼容 string、URL 和 Request-like 对象。 */
 const getInputUrl = (input: RequestInfo | URL) => {
   if (typeof input === 'string') return input;
-  if (typeof URL === 'function' && input instanceof URL)
-    return input.toString();
+  if (isURL(input)) return input.toString();
   return (input as { url: string }).url;
 };
 

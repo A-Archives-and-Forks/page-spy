@@ -1,6 +1,5 @@
-import { psLog } from '@huolala-tech/page-spy-base/dist/utils';
-import type { Client } from '@huolala-tech/page-spy-base/dist/client';
-import { makeMessage } from '@huolala-tech/page-spy-base/dist/message';
+import { psLog, makeMessage } from '@huolala-tech/page-spy-base';
+import type { Client } from '@huolala-tech/page-spy-base';
 import type {
   SpyStorage,
   PageSpyPlugin,

@@ -1,5 +1,5 @@
-import type { Client } from '@huolala-tech/page-spy-base/dist/client';
-import { getRandomId } from '@huolala-tech/page-spy-base/dist/utils';
+import type { Client } from '@huolala-tech/page-spy-base';
+import { getRandomId } from '@huolala-tech/page-spy-base';
 
 import { joinQuery, promisifyMPApi } from '../utils';
 import { Config, InitConfig } from '../config';

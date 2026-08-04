@@ -4,9 +4,12 @@ import type {
   OnInitParams,
   SpyBase,
 } from '@huolala-tech/page-spy-types';
-import { getRandomId, psLog } from '@huolala-tech/page-spy-base/dist/utils';
-import { atom } from '@huolala-tech/page-spy-base/dist/atom';
-import { makeMessage } from '@huolala-tech/page-spy-base/dist/message';
+import {
+  getRandomId,
+  psLog,
+  atom,
+  makeMessage,
+} from '@huolala-tech/page-spy-base';
 import socketStore from '../helpers/socket';
 import type { InitConfig } from '../config';
 import { getGlobal } from '../utils';
@@ -130,8 +133,9 @@ const formatNativeConsoleArg = (value: any) => {
   if ('value' in value) return value.value;
   if ('description' in value) return value.description;
   if ('unserializableValue' in value) return value.unserializableValue;
-  if ('objectId' in value)
+  if ('objectId' in value) {
     return `[${value.subtype || value.type || 'object'}]`;
+  }
   if ('type' in value) return `[${value.type}]`;
   return value;
 };
@@ -142,6 +146,7 @@ const parseNativeConsolePayload = (
 ): SpyConsole.DataItem | null => {
   let data = payload;
   if (Array.isArray(data)) {
+    // eslint-disable-next-line prefer-destructuring
     data = data[0];
   }
   if (data && typeof data === 'object' && 'detail' in data) {

@@ -1,6 +1,4 @@
-import { atom } from '@huolala-tech/page-spy-base/dist/atom';
-import { makeMessage } from '@huolala-tech/page-spy-base/dist/message';
-import { formatErrorObj } from '@huolala-tech/page-spy-base/dist/utils';
+import { atom, makeMessage, formatErrorObj } from '@huolala-tech/page-spy-base';
 import type {
   SpyConsole,
   PageSpyPlugin,

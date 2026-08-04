@@ -1,9 +1,9 @@
 import {
+  formatEntries,
   isString,
   isTypedArray,
   toStringTag,
-} from '@huolala-tech/page-spy-base/dist/utils';
-import { formatEntries } from '@huolala-tech/page-spy-base/dist/network/common';
+} from '@huolala-tech/page-spy-base';
 import { SpyNetwork } from '@huolala-tech/page-spy-types';
 
 /** 判断当前值是否为 Lynx 运行时里的 FormData。 */

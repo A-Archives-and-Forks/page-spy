@@ -2,8 +2,8 @@ import {
   SocketStoreBase,
   SocketState,
   SocketWrapper,
-} from '@huolala-tech/page-spy-base/dist/socket-base';
-import { ROOM_SESSION_KEY } from '@huolala-tech/page-spy-base/dist/constants';
+  ROOM_SESSION_KEY,
+} from '@huolala-tech/page-spy-base';
 import {
   MPSocket,
   SocketOnCloseHandler,

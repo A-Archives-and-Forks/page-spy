@@ -4,11 +4,9 @@ import {
   isObjectLike,
   isString,
   psLog,
-} from '@huolala-tech/page-spy-base/dist/utils';
-import {
   Reason,
   MAX_SIZE,
-} from '@huolala-tech/page-spy-base/dist/network/common';
+} from '@huolala-tech/page-spy-base';
 import LynxNetworkProxyBase from './base';
 import {
   markFetchProxyRequestEnd,

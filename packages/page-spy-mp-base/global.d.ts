@@ -1,4 +1,5 @@
 declare const PKG_VERSION: string;
+declare const global: any;
 
 type AppData = {
   globalData: Record<string, any>;

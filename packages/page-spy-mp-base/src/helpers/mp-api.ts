@@ -8,25 +8,6 @@ let mpSDK: any;
 
 // the origin mp sdk, used for hacking
 let originMPSDK: any;
-
-if (typeof Proxy !== 'undefined') {
-  mpSDK = new Proxy(
-    {},
-    {
-      get(target, p: string) {
-        if (platformAPI[p]) {
-          return platformAPI[p];
-        }
-        if (originMPSDK[p]) {
-          return originMPSDK[p];
-        } else {
-          console.error('The mp sdk does not support the api:', p);
-        }
-      },
-    },
-  );
-}
-
 // for API compatibility
 // this api can be modified by mp sdk implementor, to smoothy the platform differences.
 export const platformAPI: Record<string, any> = {};
@@ -48,3 +29,21 @@ export const setMPSDK = (SDK: MPSDK) => {
     };
   }
 };
+
+if (typeof Proxy !== 'undefined') {
+  mpSDK = new Proxy(
+    {},
+    {
+      get(target, p: string) {
+        if (platformAPI[p]) {
+          return platformAPI[p];
+        }
+        if (originMPSDK[p]) {
+          return originMPSDK[p];
+        }
+        console.error('The mp sdk does not support the api:', p);
+        return undefined;
+      },
+    },
+  );
+}

@@ -4,9 +4,7 @@ import type {
   OnInitParams,
   SpyBase,
 } from '@huolala-tech/page-spy-types';
-import { getRandomId } from '@huolala-tech/page-spy-base/dist/utils';
-import { atom } from '@huolala-tech/page-spy-base/dist/atom';
-import { makeMessage } from '@huolala-tech/page-spy-base/dist/message';
+import { getRandomId, makeMessage, atom } from '@huolala-tech/page-spy-base';
 import socketStore from '../helpers/socket';
 import type { InitConfig } from '../config';
 

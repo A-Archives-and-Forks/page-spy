@@ -1,5 +1,5 @@
-import type { SocketStoreBase } from '@huolala-tech/page-spy-base/dist/socket-base';
-import { makeMessage } from '@huolala-tech/page-spy-base/dist/message';
+import type { SocketStoreBase } from '@huolala-tech/page-spy-base';
+import { makeMessage, InitConfigBase } from '@huolala-tech/page-spy-base';
 import type {
   SpyStorage,
   PageSpyPlugin,
@@ -10,7 +10,6 @@ import type {
   Callback,
   MultiCallback,
 } from '@react-native-async-storage/async-storage/lib/typescript/types';
-import { InitConfigBase } from '@huolala-tech/page-spy-base';
 
 const descriptor = {
   configurable: true,

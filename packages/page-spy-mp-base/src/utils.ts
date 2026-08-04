@@ -1,4 +1,4 @@
-import { AsyncCallback, MPSDK } from './types';
+import { AsyncCallback } from './types';
 
 // PENDING: 这里补泛型
 export const promisifyMPApi = <R = any>(

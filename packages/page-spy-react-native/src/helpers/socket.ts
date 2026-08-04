@@ -3,8 +3,8 @@ import {
   SocketState,
   SocketWrapper,
   WebSocketEvents,
-} from '@huolala-tech/page-spy-base/dist/socket-base';
-import { stringifyData } from '@huolala-tech/page-spy-base/dist/utils';
+  stringifyData,
+} from '@huolala-tech/page-spy-base';
 
 export class RNWebSocketWrapper extends SocketWrapper {
   public socketInstance: WebSocket | null = null;

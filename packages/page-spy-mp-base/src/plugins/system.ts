@@ -3,8 +3,8 @@ import type {
   PageSpyPlugin,
   OnInitParams,
 } from '@huolala-tech/page-spy-types';
-import { makeMessage } from '@huolala-tech/page-spy-base/dist/message';
-import type { Client } from '@huolala-tech/page-spy-base/dist/client';
+import { makeMessage } from '@huolala-tech/page-spy-base';
+import type { Client } from '@huolala-tech/page-spy-base';
 import socketStore from '../helpers/socket';
 import { getMPSDK } from '../helpers/mp-api';
 import { promisifyMPApi } from '../utils';

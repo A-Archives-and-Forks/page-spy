@@ -1,4 +1,4 @@
-import { psLog } from '@huolala-tech/page-spy-base/dist/utils';
+import { psLog } from '@huolala-tech/page-spy-base';
 import { CacheMessageItem } from '../harbor/base';
 import { i18n } from '../assets/locale';
 import { formatFilename } from './index';
